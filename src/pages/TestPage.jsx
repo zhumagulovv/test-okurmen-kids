@@ -11,7 +11,8 @@ import CodeAnswer from '../components/common/CodeAnswer';
 import TextAnswer from '../components/common/TextAnswer';
 import MultiChoice from '../components/common/MultiChoice';
 import { incrementTimer, nextQuestion, prevQuestion, setCurrentIndex, startTimer } from '../features/quiz/quizSlice';
-import { finishAttempt } from '../features/attempt/attemptSlice';
+import { fetchResult, finishAttempt, submitAnswer } from '../features/attempt/attemptSlice';
+import { useNavigate } from 'react-router-dom';
 
 const QUESTION_COMPONENTS = {
     single_choice: SingleChoice,
@@ -19,6 +20,18 @@ const QUESTION_COMPONENTS = {
     code: CodeAnswer,
     text: TextAnswer,
 };
+
+const normalizeLanguage = (lang) => {
+    if (!lang) return 'layout'
+
+    const l = lang.toLowerCase()
+
+    if (l.includes('python')) return 'python'
+    if (l.includes('js') || l.includes('javascript')) return 'js'
+    if (l.includes('html') || l.includes('css')) return 'layout'
+
+    return 'fullstack'
+}
 
 const formatTime = (seconds) => {
     const m = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -28,6 +41,7 @@ const formatTime = (seconds) => {
 
 const TestPage = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const { currentIndex, elapsed } = useSelector((s) => s.quiz);
     const { questions, current } = useSelector((s) => s.attempt);
 
@@ -37,30 +51,102 @@ const TestPage = () => {
     const progress = total ? Math.round(((currentIndex + 1) / total) * 100) : 0;
     const question = questions[currentIndex];
 
+    const normalizedLanguage = normalizeLanguage(question?.language)
+
     useEffect(() => {
         dispatch(startTimer());
         const interval = setInterval(() => dispatch(incrementTimer()), 1000);
         return () => clearInterval(interval);
     }, [dispatch]);
 
-    const handleFinish = () => {
+    // const handleFinish = useCallback(async () => {
+    //     try {
+    //         // 🔥 1. проверка multi choice
+    //         const multiChoiceQuestions = questions.filter(
+    //             q => q.type === 'multiple_choice'
+    //         )
 
-        const multiChoiceQuestions = questions.filter(q => q.type === 'multiple_choice');
-        const invalidMultiChoice = multiChoiceQuestions.some(
-            q => !answers[q.id] || answers[q.id].length !== 2
-        );
+    //         const invalidMultiChoice = multiChoiceQuestions.some(
+    //             q => !answers[q.id] || answers[q.id].length !== 2
+    //         )
 
-        if (invalidMultiChoice) {
-            alert('Для вопросов с множественным выбором необходимо выбрать ровно 2 варианта');
-            return;
+    //         if (invalidMultiChoice) {
+    //             alert('Для вопросов с множественным выбором необходимо выбрать ровно 2 варианта')
+    //             return
+    //         }
+
+    //         // 🔥 2. получаем id безопасно
+    //         const attemptId = current?.id || current?.attempt_id
+
+    //         if (!attemptId) {
+    //             console.error('Attempt ID not found:', current)
+    //             alert('Ошибка: нет attempt id')
+    //             return
+    //         }
+
+    //         // 🔥 3. отправка
+    //         await dispatch(finishAttempt(attemptId)).unwrap()
+
+    //         // 🔥 4. если есть результат — можно добавить
+    //         await dispatch(fetchResult(attemptId)).unwrap()
+
+    //         // 🔥 5. переход (если используешь react-router)
+    //         navigate('/result-page')
+
+    //     } catch (error) {
+    //         console.error('Finish error:', error)
+    //         alert(error?.message || 'Ошибка завершения теста')
+    //     }
+    // }, [questions, answers, current, dispatch])
+
+    const handleFinish = useCallback(async () => {
+        try {
+            // 1. Validate multi choice
+            const multiChoiceQuestions = questions.filter(q => q.type === 'multiple_choice')
+            const invalidMultiChoice = multiChoiceQuestions.some(q => {
+                const required = q.correct_count ?? 2  // use API field if available
+                return !answers[q.id] || answers[q.id].length !== required
+            })
+
+            if (invalidMultiChoice) {
+                alert('Для вопросов с множественным выбором необходимо выбрать ровно 2 варианта')
+                return
+            }
+
+            const attemptId = current?.id || current?.attempt_id
+            if (!attemptId) {
+                alert('Ошибка: нет attempt id')
+                return
+            }
+
+            // 2. ✅ Submit every answer before finishing
+            await Promise.all(
+                questions.map((q) => {
+                    const answer = answers[q.id]
+                    if (answer === undefined || answer === null || answer === '') return null
+
+                    return dispatch(submitAnswer({
+                        attempt_id: attemptId,
+                        question_id: q.id,
+                        answer: answer,        // adjust field name to match your API
+                    })).unwrap()
+                }).filter(Boolean)
+            )
+
+            // 3. Finish + fetch result
+            await dispatch(finishAttempt(attemptId)).unwrap()
+            await dispatch(fetchResult(attemptId)).unwrap()
+
+            navigate('/result-page')
+        } catch (error) {
+            console.error('Finish error:', error)
+            alert(error?.message || 'Ошибка завершения теста')
         }
-
-        if (current?.id) dispatch(finishAttempt(current.id));
-    };
+    }, [questions, answers, current, dispatch, navigate])
 
     const QuestionComponent = question.type ? QUESTION_COMPONENTS[question.type] ?? TextAnswer : null;
 
-    console.log(question)
+    // console.log(question)
 
     const handleAnswerChange = (questionId, value) => {
         setAnswers(prev => ({
@@ -110,23 +196,30 @@ const TestPage = () => {
                     <div className="bg-(--surface-container-low) p-6 rounded-(--xl) flex-1">
                         <div className="flex justify-between items-center mb-6">
                             <span className="font-headline font-bold text-sm text-(--on-surface)">Карта вопросов</span>
-                            <span className="text-xs text-(--on-surface-variant)">10 / 20 Загружено</span>
+                            <span className="text-xs text-(--on-surface-variant)">
+                                {Object.keys(answers).length} / {total} Отвечено
+                            </span>
                         </div>
 
                         <div className="grid grid-cols-5 gap-3">
-                            {questions.map((_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => dispatch(setCurrentIndex(i))}
-                                    className={`aspect-square flex items-center justify-center rounded-(--xl) font-bold cursor-pointer transition-colors
-                                        ${i === currentIndex
-                                            ? 'bg-(--primary) text-white shadow-lg shadow-(--primary)/20 ring-4 ring-(--primary)/20'
-                                            : 'bg-(--surface-container-lowest) text-(--on-surface-variant) hover:bg-(--surface-container-high) border border-(--outline-variant)/10'
-                                        }`}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
+                            {questions.map((q, i) => {
+                                const isAnswered = answers[q.id] !== undefined && answers[q.id] !== '' &&
+                                    (Array.isArray(answers[q.id]) ? answers[q.id].length > 0 : true)
+                                return (
+                                    <button
+                                        key={i}
+                                        onClick={() => dispatch(setCurrentIndex(i))}
+                                        className={`aspect-square flex items-center justify-center rounded-(--xl) font-bold cursor-pointer transition-colors ${i === currentIndex
+                                            ? 'bg-(--primary) text-white shadow-lg ring-4 ring-(--primary)/20'
+                                            : isAnswered
+                                                ? 'bg-(--secondary-container) text-(--on-secondary-container) border border-(--secondary)/30'
+                                                : 'bg-(--surface-container-lowest) text-(--on-surface-variant) hover:bg-(--surface-container-high) border border-(--outline-variant)/10'
+                                            }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                )
+                            })}
                         </div>
 
                         <div className="mt-8 flex flex-col gap-4">
@@ -150,6 +243,11 @@ const TestPage = () => {
                         ) : (
                             <>
                                 <div className="mb-12">
+                                    {question.language && (
+                                        <span className="text-xs font-medium text-(--primary) bg-(--primary)/10 px-2 py-1 rounded-lg uppercase tracking-widest mb-2 inline-block">
+                                            {normalizedLanguage}
+                                        </span>
+                                    )}
                                     <h2 className="font-headline font-bold text-3xl md:text-4xl text-(--on-background) leading-tight">
                                         {question.text}
                                     </h2>
@@ -157,7 +255,7 @@ const TestPage = () => {
                                 <QuestionComponent
                                     options={question.options ?? []}
                                     name={`question_${question.id}`}
-                                    language={question.language}
+                                    language={normalizedLanguage}
                                     value={answers[question.id] || (question.type === 'multiple_choice' ? [] : '')} // текущее значение
                                     onChange={(val) => handleAnswerChange(question.id, val)} // обработчик
                                 />

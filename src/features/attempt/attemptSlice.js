@@ -6,7 +6,6 @@ export const startAttempt = createAsyncThunk(
     async ({ key, student_name }, { rejectWithValue }) => {
         try {
             const result = await endpoints.startAttempt({ key, student_name });
-            console.log('API response:', result);
             return result;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -75,6 +74,8 @@ const attemptSlice = createSlice({
             state.answers = {};
             state.submitting = {};
             state.result = null;
+            state.loading = false;
+            state.error = null;
         },
         setSubmitting: (state, action) => {
             const { questionId, isSubmitting } = action.payload;
@@ -85,9 +86,9 @@ const attemptSlice = createSlice({
         builder
             .addCase(startAttempt.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
             .addCase(startAttempt.fulfilled, (state, action) => {
-                console.log('API response:', action.payload); 
                 state.loading = false;
                 state.current = action.payload;
                 state.questions = action.payload.questions || [];
@@ -98,18 +99,30 @@ const attemptSlice = createSlice({
                 state.error = action.payload;
             })
             .addCase(submitAnswer.fulfilled, (state, action) => {
-                const { question_id, is_correct, grading_status } = action.meta.arg;
-                if (state.answers[question_id]) {
-                    state.answers[question_id].submitted = true;
-                    state.answers[question_id].is_correct = is_correct;
-                    state.answers[question_id].grading_status = grading_status;
+                const { question_id } = action.meta.arg;         // ✅ what we sent
+                const payload = action.payload ?? {};
+                const { is_correct, grading_status } = payload;  // ✅ what API returned
+                if (!state.answers[question_id]) {
+                    state.answers[question_id] = {};
                 }
+                state.answers[question_id].submitted = true;
+                state.answers[question_id].is_correct = is_correct;
+                state.answers[question_id].grading_status = grading_status;
             })
-            .addCase(finishAttempt.fulfilled, (state, action) => {
+            .addCase(submitAnswer.rejected, (state, action) => {
+                console.error('submitAnswer failed:', action.payload);
+            })
+            .addCase(finishAttempt.fulfilled, (state) => {
                 state.current = { ...state.current, finished: true };
+            })
+            .addCase(finishAttempt.rejected, (state, action) => {
+                console.error('finishAttempt failed:', action.payload);
             })
             .addCase(fetchResult.fulfilled, (state, action) => {
                 state.result = action.payload;
+            })
+            .addCase(fetchResult.rejected, (state, action) => {
+                console.error('fetchResult failed:', action.payload);
             });
     },
 });

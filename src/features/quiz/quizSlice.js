@@ -38,7 +38,8 @@ const quizSlice = createSlice({
             state.isRunning = false;
         },
 
-        resetTimer: (state) => {
+        resetQuiz: (state) => {        // ✅ added — resets everything
+            state.currentIndex = 0;
             state.elapsed = 0;
             state.isRunning = false;
         },
@@ -52,7 +53,7 @@ export const {
     incrementTimer,
     startTimer,
     stopTimer,
-    resetTimer,
+    resetQuiz,
     setElapsed
 } = quizSlice.actions;
 
