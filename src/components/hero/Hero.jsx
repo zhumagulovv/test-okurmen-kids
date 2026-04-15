@@ -28,9 +28,9 @@ const Hero = () => {
                                 className="text-6xl md:text-7xl font-extrabold font-headline leading-[1.1] text-color-two tracking-tight">
                                 IT Академия: <br />
                                 <span
-                                    className="bg-linear-to-r via-secondary to-primary bg-size-[200%_auto] animate-gradient text-transparent bg-clip-text text-color">Экзаменационный центр</span>
+                                    className="bg-linear-to-r via-(--secondary) to-(--primary) bg-size-[200%_auto] animate-gradient text-transparent bg-clip-text text-color text-balance">Экзаменационный центр</span>
                             </h2>
-                            <p className="text-xl text-color-three max-w-xl leading-relaxed font-medium">
+                            <p className="text-xl text-color-three max-w-xl leading-relaxed font-medium text-wrap">
                                 Добро пожаловать в профессиональный портал оценки. Введите ваш уникальный код сессии ниже, чтобы пройти аутентификацию и начать путь к цифровой сертификации.
                             </p>
                         </div>

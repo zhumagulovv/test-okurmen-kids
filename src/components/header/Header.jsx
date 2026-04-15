@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+let MENU_HEADER = [
+    { id: 1, label: 'Главная', path: '/' },
+    { id: 2, label: 'Таблица РЗ', path: '/table' },
+    { id: 3, label: 'Лидер борт', path: '/leaderboard' },
+];
+
 const Header = () => {
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
+
+    const toggleMenu = () => {
+        navigate("/entry-page");
+        setOpen(!open);
+    }
 
     return (
         <header className="w-full sticky top-0 z-50 bg-[#f7f5ff]/80 backdrop-blur-md">
@@ -25,15 +36,13 @@ const Header = () => {
                 {/* Desktop menu */}
                 <div className="hidden md:flex items-center gap-10">
                     <ul className="flex items-center gap-6">
-                        <li className="hover:text-[#0057bd] transition-colors">
-                            <Link to="/">Главная</Link>
-                        </li>
-                        <li className="hover:text-[#0057bd] transition-colors">
-                            <Link to="/table">Таблица РЗ</Link>
-                        </li>
-                        <li className="hover:text-[#0057bd] transition-colors">
-                            <Link to="/leaderboard">Лидер борт</Link>
-                        </li>
+                        {
+                            MENU_HEADER.map((item) => (
+                                <li key={item.id} className="hover:text-[#0057bd] transition-colors">
+                                    <Link to={item.path}>{item.label}</Link>
+                                </li>
+                            ))
+                        }
                     </ul>
 
                     <div className="flex items-center gap-4">
@@ -52,9 +61,13 @@ const Header = () => {
             {open && (
                 <div className="md:hidden px-4 pb-4 space-y-4 bg-[#f7f5ff] border-t border-black/5">
                     <ul className="flex flex-col gap-3">
-                        <li><Link to="/">Главная</Link></li>
-                        <li><Link to="/table">Таблица РЗ</Link></li>
-                        <li><Link to="/leaderboard">Лидер борт</Link></li>
+                        {
+                            MENU_HEADER.map((item) => (
+                                <li key={item.id} className="hover:text-[#0057bd] transition-colors">
+                                    <Link to={item.path} onClick={() => setOpen(false)}>{item.label}</Link>
+                                </li>
+                            ))
+                        }
                     </ul>
 
                     <div className="flex flex-col gap-3">
@@ -62,7 +75,7 @@ const Header = () => {
                             +996 702 247 092
                         </a>
 
-                        <button onClick={() => navigate("/entry-page")} className="w-full text-white py-3 rounded-2xl font-bold button-primary">
+                        <button onClick={toggleMenu} className="w-full text-white py-3 rounded-2xl font-bold button-primary">
                             Пройти тест
                         </button>
                     </div>

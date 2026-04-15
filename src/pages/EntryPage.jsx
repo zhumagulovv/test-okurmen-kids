@@ -66,8 +66,8 @@ const EntryPage = () => {
                         <button
                             onClick={handleSubmit}
                             disabled={loading}
-                            className="w-full bg-linear-to-r from-(--primary) to-(--primary-container) font-headline font-bold py-5 rounded-xl shadow-lg hover:shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-color-on-primary">
-                            {loading ? 'Проверка...' : 'Продолжить аутентификацию'}
+                            className="w-full bg-linear-to-r from-(--primary) to-(--primary-container) font-headline font-bold py-5 rounded-xl shadow-lg hover:shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-base text-(--on-primary) sm:text-xs md:text-sm lg:text-base">
+                            {loading ? 'Проверка...' : 'Продолжить'}
                             <FaArrowRight />
                         </button>
                     </div>
