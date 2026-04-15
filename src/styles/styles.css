@@ -1,0 +1,186 @@
+/* background */
+
+.mesh-gradient {
+    background-color: #f7f5ff;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(0, 87, 189, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(106, 55, 212, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(252, 192, 37, 0.08) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(0, 87, 189, 0.1) 0px, transparent 50%);
+}
+
+.geometric-dots {
+    background-image: radial-gradient(circle at 1px 1px, rgba(0, 87, 189, 0.05) 1px, transparent 0);
+    background-size: 24px 24px;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.distraction-free-bg {
+    background-color: #ffffff;
+    min-height: max(884px, 100dvh);
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.code-shadow {
+    box-shadow: 0 8px 32px rgba(36, 44, 81, 0.04);
+}
+
+/* background-color */
+.bacground-color-first {
+    background-color: var(--primary-container);
+}
+
+.surface-background {
+    background-color: var(--surface);
+}
+
+.second-background-color {
+    background-color: var(--surface-container-lowest);
+}
+
+.third-background-color {
+    background-color: var(--surface-container-high);
+}
+
+.forth-background-color {
+    background-color: var(--surface-container-highest);
+}
+
+.main-background {
+    background-color: var(--background);
+}
+
+.bacground-color-primary {
+    background-color: var(--primary);
+}
+
+
+/* background-color percent */
+
+.bacground-color {
+    background-color: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.bacground-color-second {
+    background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.secondary-background {
+    background-color: color-mix(in srgb, var(--secondary) 10%, transparent);
+}
+
+.secondary-background-hover:hover {
+    background-color: color-mix(in srgb, var(--secondary) 5%, transparent);
+}
+
+.third-background {
+    background-color: color-mix(in srgb, var(--tertiary-container) 20%, transparent);
+}
+
+.forth-background {
+    background-color: color-mix(in srgb, var(--primary) 90%, transparent);
+}
+
+.fifth-background {
+    background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.sixth-background {
+    background-color: color-mix(in srgb, var(--primary-container) 20%, transparent);
+}
+
+.seventh-background {
+    background-color: color-mix(in srgb, var(--secondary-container) 30%, transparent);
+}
+
+/* button */
+
+.button-primary {
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
+/* color */
+
+.text-color {
+    color: var(--primary);
+}
+
+.text-secondary {
+    color: var(--secondary);
+}
+
+.text-third {
+    color: var(--tertiary);
+}
+
+.text-hover:hover {
+    color: var(--primary);
+}
+
+.text-color-two {
+    color: var(--on-surface);
+}
+
+.text-color-three {
+    color: var(--on-surface-variant);
+}
+
+.text-color-secondary {
+    color: var(--secondary);
+}
+
+.text-color-on-primary {
+    color: var(--on-primary);
+}
+
+/* border radius */
+
+.border-raduis {
+    border-radius: var(--xl);
+}
+
+/* border */
+.border-first {
+    border-color: var(--surface-container-highest);
+}
+
+
+/* border percent */
+
+.secondary-border {
+    border-color: color-mix(in srgb, var(--secondary) 10%, transparent);
+}
+
+.third-border {
+    border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.secondary-border-hover:hover {
+    border-color: color-mix(in srgb, var(--secondary) 5%, transparent);
+}
+
+.primary-border {
+    border-color: color-mix(in srgb, var(--primary) 5%, transparent);
+}

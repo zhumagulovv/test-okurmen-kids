@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@import "./styles/styles.css";
+
+:root {
+    --font-sans: 'Inter', sans-serif;
+    --font-mono: 'SF Mono', SF Mono, SF Mono-Regular, Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+    /* colors */
+    --on-tertiary: #fff1db;
+    --on-tertiary-container: #563e00;
+    --on-error-container: #570008;
+    --tertiary-dim: #674b00;
+    --on-tertiary-fixed-variant: #614700;
+    --on-error: #ffefee;
+    --surface-container-low: #efefff;
+    --on-surface-variant: #515981;
+    --on-background: #242c51;
+    --secondary: #6a37d4;
+    --primary: #0057bd;
+    --surface: #f7f5ff;
+    --outline-variant: #a3abd7;
+    --on-primary-fixed-variant: #002a62;
+    --on-surface: #242c51;
+    --error: #b31b25;
+    --background: #f7f5ff;
+    --inverse-primary: #4d8eff;
+    --error-dim: #9f0519, ;
+    --tertiary-container: #fcc025;
+    --surface-container-high: #dde1ff;
+    --on-primary-fixed: #000000;
+    --outline: #6c759e;
+    --tertiary: #755600;
+    --secondary-fixed: #dac9ff;
+    --surface-tint: #0057bd;
+    --secondary-container: #dac9ff;
+    --primary-fixed-dim: #5391ff;
+    --on-secondary-fixed: #40009b;
+    --on-primary-container: #002150;
+    --surface-variant: #d6dbff;
+    --secondary-dim: #5e26c7;
+    --tertiary-fixed-dim: #edb210;
+    --error-container: #fb5151;
+    --on-primary: #f0f2ff;
+    --surface-bright: #f7f5ff;
+    --primary-fixed: #6e9fff;
+    --on-secondary-container: #5517bf;
+    --on-secondary-fixed-variant: #5f28c8;
+    --primary-container: #6e9fff;
+    --surface-container-highest: #d6dbff;
+    --surface-container: #e4e7ff;
+    --inverse-on-surface: #929bc6;
+    --secondary-fixed-dim: #ceb9ff;
+    --surface-container-lowest: #ffffff;
+    --inverse-surface: #020a2f;
+    --tertiary-fixed: #fcc025;
+    --primary-dim: #004ca6;
+    --surface-dim: #cad2ff;
+    --on-tertiary-fixed: #3d2b00;
+
+    /* border-radius */
+    --DEFAULT: 0.25rem;
+    --lg: 0.5rem;
+    --xl: 1.5rem;
+    --full: 9999px;
+}
+
+.body {
+    font-family: var(--font-sans);
+    background-color: var(--background);
+}
