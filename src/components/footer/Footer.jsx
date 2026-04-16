@@ -25,7 +25,7 @@ const Footer = () => {
                         <h5 className="font-bold text-on-surface">Контакты</h5>
                         <div className="flex items-center gap-2 text-sm text-on-surface-variant">
                             <IoIosCall className='text-color text-2xl' />
-                            <a className="transition-colors text-hover" href="tel:+996774814583">+996774814583</a>
+                            <a className="transition-colors text-hover" href="tel:+996702247092">+996702 247 092</a>
                         </div>
                     </div>
                     <div className="flex items-end md:justify-end">

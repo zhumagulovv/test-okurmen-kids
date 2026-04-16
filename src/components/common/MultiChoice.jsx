@@ -1,6 +1,4 @@
-import { useState } from 'react';
-
-const MultiChoice = ({ options = [], name = 'question', value = [], onChange }) => {
+;const MultiChoice = ({ options = [], name = 'question', value = [], onChange }) => {
     const toggle = (optionId) => {
         let newValue;
 
@@ -54,11 +52,6 @@ const MultiChoice = ({ options = [], name = 'question', value = [], onChange }) 
                         </label>
                     );
                 })}
-            </div>
-            <div className="text-sm text-(--on-surface-variant) mt-2 flex justify-between items-center">
-                <span className={`font-medium ${value.length === 2 ? 'text-(--primary)' : 'text-(--on-surface-variant)'}`}>
-                    {value.length === 2 ? '✓ Готово к отправке' : 'ℹ️ Нужно выбрать 2 варианта'}
-                </span>
             </div>
         </div>
     );

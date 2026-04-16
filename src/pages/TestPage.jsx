@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
+import { useBlocker, useNavigate } from 'react-router-dom';
 
-import logoImage from '../assets/logo.png'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { MdOutlineTaskAlt } from 'react-icons/md';
 
@@ -12,7 +12,10 @@ import TextAnswer from '../components/common/TextAnswer';
 import MultiChoice from '../components/common/MultiChoice';
 import { incrementTimer, nextQuestion, prevQuestion, setCurrentIndex, startTimer } from '../features/quiz/quizSlice';
 import { fetchResult, finishAttempt, submitAnswer } from '../features/attempt/attemptSlice';
-import { useNavigate } from 'react-router-dom';
+
+import logoImage from '../assets/logo.png'
+import { BLOCKED_COMBINATIONS } from '../constants/constants';
+import { useMatchHotkey } from '../hooks/useMatchHotkey';
 
 const QUESTION_COMPONENTS = {
     single_choice: SingleChoice,
@@ -39,15 +42,6 @@ const formatTime = (seconds) => {
     return `${m}:${s}`;
 };
 
-// const normalizeAnswer = (q, answer) => {
-//     if (q.type === 'code') {
-//         return typeof answer === 'object'
-//             ? JSON.stringify(answer)
-//             : answer;
-//     }
-//     return answer;
-// };
-
 const TestPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -55,6 +49,7 @@ const TestPage = () => {
     const { questions, current } = useSelector((s) => s.attempt);
 
     const [answers, setAnswers] = useState({});
+    const [isExamActive, setIsExamActive] = useState(true);
 
     const total = questions.length;
     const progress = total ? Math.round(((currentIndex + 1) / total) * 100) : 0;
@@ -62,108 +57,116 @@ const TestPage = () => {
 
     const normalizedLanguage = normalizeLanguage(question?.language)
 
-    useEffect(() => {
-        dispatch(startTimer());
-        const interval = setInterval(() => dispatch(incrementTimer()), 1000);
-        return () => clearInterval(interval);
-    }, [dispatch]);
+    const handleAutoFinish = async () => {
+        try {
+            await finishAttemptFlow();
+        } catch (e) {
+            console.error('auto finish error', e);
+        }
+    };
 
-    // const handleFinish = useCallback(async () => {
-    //     try {
-    //         // 🔥 1. проверка multi choice
-    //         const multiChoiceQuestions = questions.filter(
-    //             q => q.type === 'multiple_choice'
-    //         )
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            isExamActive && currentLocation.pathname !== nextLocation.pathname
+    );
 
-    //         const invalidMultiChoice = multiChoiceQuestions.some(
-    //             q => !answers[q.id] || answers[q.id].length !== 2
-    //         )
+    const finishAttemptFlow = async () => {
+        const attemptId = current?.id || current?.attempt_id;
 
-    //         if (invalidMultiChoice) {
-    //             alert('Для вопросов с множественным выбором необходимо выбрать ровно 2 варианта')
-    //             return
-    //         }
+        if (!attemptId) {
+            throw new Error('NO_ATTEMPT_ID');
+        }
 
-    //         // 🔥 2. получаем id безопасно
-    //         const attemptId = current?.id || current?.attempt_id
+        // 2. ✅ Submit every answer before finishing
+        await Promise.all(
+            questions.map((q) => {
+                const answer = answers[q.id]
+                if (answer === undefined || answer === null || answer === '') return null
 
-    //         if (!attemptId) {
-    //             console.error('Attempt ID not found:', current)
-    //             alert('Ошибка: нет attempt id')
-    //             return
-    //         }
+                const payload = {
+                    attempt_id: attemptId,
+                    question_id: q.id,
+                }
+                if (q.type === 'single_choice') {
+                    payload.selected_options = [answer]  // API expects an array for options, even if it's single choice
+                }
+                else if (q.type === 'multiple_choice') {
+                    payload.selected_options = Array.isArray(answer)
+                        ? answer
+                        : [answer];  // already an array
+                } else if (q.type === 'text') {
+                    payload.answer_text = answer
+                } else if (q.type === 'code') {
+                    payload.answer_text = typeof answer === 'object'
+                        ? JSON.stringify(answer)
+                        : answer
+                }
+                return dispatch(submitAnswer(payload)).unwrap()
+            }).filter(Boolean))
 
-    //         // 🔥 3. отправка
-    //         await dispatch(finishAttempt(attemptId)).unwrap()
+        await dispatch(finishAttempt(attemptId)).unwrap();
+        await dispatch(fetchResult(attemptId)).unwrap();
 
-    //         // 🔥 4. если есть результат — можно добавить
-    //         await dispatch(fetchResult(attemptId)).unwrap()
-
-    //         // 🔥 5. переход (если используешь react-router)
-    //         navigate('/result-page')
-
-    //     } catch (error) {
-    //         console.error('Finish error:', error)
-    //         alert(error?.message || 'Ошибка завершения теста')
-    //     }
-    // }, [questions, answers, current, dispatch])
+        return attemptId;
+    }
 
     const handleFinish = useCallback(async () => {
         try {
-            // 1. Validate multi choice
-            const multiChoiceQuestions = questions.filter(q => q.type === 'multiple_choice')
-            const invalidMultiChoice = multiChoiceQuestions.some(q => {
-                const required = q.correct_count ?? 2  // use API field if available
-                return !answers[q.id] || answers[q.id].length !== required
-            })
-
-            if (invalidMultiChoice) {
-                alert('Для вопросов с множественным выбором необходимо выбрать ровно 2 варианта')
-                return
-            }
-
-            const attemptId = current?.id || current?.attempt_id
-            if (!attemptId) {
-                alert('Ошибка: нет attempt id')
-                return
-            }
-
-            // 2. ✅ Submit every answer before finishing
-            await Promise.all(
-                questions.map((q) => {
-                    const answer = answers[q.id]
-                    if (answer === undefined || answer === null || answer === '') return null
-
-                    const payload = {
-                        attempt_id: attemptId,
-                        question_id: q.id,
-                    }
-                    if (q.type === 'single_choice') {
-                        payload.selected_options = [answer]  // API expects an array for options, even if it's single choice
-                    }
-                    else if (q.type === 'multiple_choice') {
-                        payload.selected_options = answer  // already an array
-                    } else if (q.type === 'text') {
-                        payload.answer_text = answer
-                    } else if (q.type === 'code') {
-                        payload.answer_text = typeof answer === 'object'
-                            ? JSON.stringify(answer)
-                            : answer
-                    }
-                    return dispatch(submitAnswer(payload)).unwrap()
-                }).filter(Boolean)
-            )
-
-            // 3. Finish + fetch result
-            await dispatch(finishAttempt(attemptId)).unwrap()
-            await dispatch(fetchResult(attemptId)).unwrap()
-
+            await finishAttemptFlow();
             navigate('/result-page')
         } catch (error) {
             console.error('Finish error:', error)
             alert(error?.message || 'Ошибка завершения теста')
         }
     }, [questions, answers, current, dispatch, navigate])
+
+    useEffect(() => {
+        dispatch(startTimer());
+        const interval = setInterval(() => dispatch(incrementTimer()), 1000);
+
+        const preventNavigation = (e) => {
+            e.preventDefault();
+            e.returnValue = '';
+        };
+
+        const preventRefresh = (e) => {
+            if (BLOCKED_COMBINATIONS.some(combo => useMatchHotkey(e, combo))) {
+                e.preventDefault();
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                handleFinish(); // 🔥 твоя функция
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        const preventCopy = (e) => e.preventDefault();
+        const preventPaste = (e) => e.preventDefault();
+        const preventCut = (e) => e.preventDefault();
+
+        document.addEventListener('copy', preventCopy);
+        document.addEventListener('paste', preventPaste);
+        document.addEventListener('cut', preventCut);
+
+        window.addEventListener('keydown', preventRefresh);
+        window.addEventListener('beforeunload', preventNavigation);
+
+        if (blocker.state === "blocked") {
+            handleAutoFinish()
+                .then(() => blocker.proceed())
+                .catch(() => blocker.reset());
+        }
+
+        return () => {
+            clearInterval(interval)
+            window.removeEventListener('beforeunload', preventNavigation);
+            window.removeEventListener('keydown', preventRefresh);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [dispatch, blocker, handleFinish]);
 
     const QuestionComponent = question.type ? QUESTION_COMPONENTS[question.type] ?? TextAnswer : null;
 
@@ -305,7 +308,7 @@ const TestPage = () => {
                             <button
                                 onClick={handleFinish}
                                 className="w-full md:w-auto px-10 py-4 rounded-xl bg-linear-to-r from-(--primary) to-(--primary-container) text-white font-headline font-extrabold text-lg shadow-xl shadow-(--primary)/20 hover:shadow-2xl hover:shadow-(--primary)/30 transition-all active:scale-95 flex items-center justify-center gap-3">
-                                Отправить экзамен
+                                Отправить
                                 <MdOutlineTaskAlt />
                             </button>
                         </div>

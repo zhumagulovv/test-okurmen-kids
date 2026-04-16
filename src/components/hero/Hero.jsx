@@ -79,7 +79,7 @@ const Hero = () => {
                         </div>
                         <div className="bg-surface-container-low/50 p-4 rounded-xl border border-primary/5">
                             <p className="text-center text-xs text-on-surface-variant leading-relaxed">
-                                Нужна помощь? <span className="text-color font-bold">Спросите у проктора</span> для кода идентификации класса, чтобы начать.
+                                Нужна помощь? <a href='tel:+996702247092' className="text-color font-bold">руководитель команды тренеров</a> для кода идентификации класса, чтобы начать.
                             </p>
                         </div>
                     </div>

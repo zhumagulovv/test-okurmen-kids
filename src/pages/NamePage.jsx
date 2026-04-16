@@ -98,7 +98,7 @@ const NamePage = () => {
                                     disabled={attemptLoading || sessionLoading}
                                     className="w-full bg-linear-to-r from-(--primary) to-(--primary-dim) text-white py-6 rounded-xl text-xl font-bold flex items-center justify-center gap-3 shadow-[0_12px_24px_rgba(0,87,189,0.2)] hover:shadow-[0_16px_32px_rgba(0,87,189,0.3)] transform hover:-translate-y-1 transition-all active:scale-95 duration-150"
                                     type="submit">
-                                    {attemptLoading ? "Загрузка..." : "Проверить & Начать"}
+                                    {attemptLoading ? "Загрузка..." : "Начать"}
                                     <IoRocketSharp className='text-2xl' />
                                 </button>
                             </div>
