@@ -38,6 +38,7 @@ const CodeAnswer = ({ language, value, onChange }) => {
     const allowedTabs = ENABLED_TABS[questionType];
 
     const [activeTab, setActiveTab] = useState(allowedTabs[0]);
+    
     const [code, setCode] = useState(
         typeof value === 'object' && value !== null ? value : DEFAULT_CODE
     );

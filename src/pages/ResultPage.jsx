@@ -39,12 +39,14 @@ const ResultPage = () => {
         )
     }
 
+    const scorePercent = Math.round(result.score ?? 0)
+
     // --- Derive display values from result ---
     // Adjust field names below to match your actual API response shape
-    const total = result.total_questions ?? result.questions?.length ?? 0
-    const correct = result.correct_answers ?? result.score ?? 0
-    const wrong = total - correct
-    const scorePercent = total ? Math.round((correct / total) * 100) : 0
+    const total = result.answers.length ?? 0
+    const correct = result.answers.filter(a => a.is_correct === true).length ?? 0
+    const wrong = result.answers.filter(a => a.is_correct === false).length ?? 0
+    const pending = result.answers.filter(a => a.grading_status === "processing").length ?? 0
 
     // Circular SVG progress maths (r = 45% of viewBox = ~126 for 280px circle)
     const RADIUS = 45          // percent-based radius used in the SVG
@@ -100,7 +102,7 @@ const ResultPage = () => {
                     <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
                         <div>
                             <span className="inline-block px-4 py-1.5 rounded-full bg-(--secondary-container) text-(--on-secondary-container) text-sm font-bold font-label mb-4">
-                                {result.quiz_title ?? result.title ?? 'Экзамен'}
+                                {result.test_title ?? result.quiz_title ?? result.title ?? 'Экзамен'}
                             </span>
                             <h1 className="text-5xl md:text-6xl font-black font-headline text-(--on-background) leading-tight">
                                 {scorePercent}% — {scoreLabel}
@@ -108,6 +110,12 @@ const ResultPage = () => {
                             <p className="text-lg text-(--on-surface-variant) max-w-md mt-4 font-medium">
                                 {result.message ?? 'Тест завершён. Проверьте свои результаты ниже.'}
                             </p>
+
+                            {pending > 0 && (
+                                <p className="text-sm text-(--on-surface-variant) mt-3 bg-(--surface-container-low) px-4 py-2 rounded-xl inline-block">
+                                    ⏳ {pending} ответ(а) ещё проверяются — итоговый балл может обновиться
+                                </p>
+                            )}
                         </div>
                         <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-4">
                             <button
@@ -162,6 +170,56 @@ const ResultPage = () => {
                     </div>
                 </div>
             </section>
+
+            {/* <section>
+                <h2 className="font-headline font-bold text-2xl text-(--on-surface) mb-6">Разбор ответов</h2>
+                <div className="flex flex-col gap-4">
+                    {result.answers?.map((a, i) => {
+                        const isPending = a.grading_status === 'processing'
+                        const isCorrect = a.is_correct === true
+                        const isWrong = a.is_correct === false
+
+                        return (
+                            <div
+                                key={a.question_id}
+                                className={`p-6 rounded-(--xl) border-2 transition-colors ${isPending
+                                        ? 'bg-(--surface-container-low) border-(--outline-variant)/20'
+                                        : isCorrect
+                                            ? 'bg-(--primary)/5 border-(--primary)/20'
+                                            : 'bg-(--error)/5 border-(--error)/20'
+                                    }`}
+                            >
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex items-start gap-4">
+                                        <span className="w-8 h-8 rounded-lg bg-(--surface-container-high) flex items-center justify-center text-sm font-bold text-(--on-surface-variant) shrink-0">
+                                            {i + 1}
+                                        </span>
+                                        <div>
+                                            <p className="font-semibold text-(--on-surface) mb-1">{a.question_text}</p>
+                                            <span className="text-xs font-medium text-(--on-surface-variant) uppercase tracking-widest">
+                                                {a.question_type}
+                                            </span>
+                                            {a.answer_text && (
+                                                <p className="mt-2 text-sm text-(--on-surface-variant) bg-(--surface-container-high) px-3 py-2 rounded-lg">
+                                                    {a.answer_text}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <span className={`shrink-0 text-xs font-bold px-3 py-1.5 rounded-full ${isPending
+                                            ? 'bg-(--surface-container-high) text-(--on-surface-variant)'
+                                            : isCorrect
+                                                ? 'bg-(--primary)/10 text-(--primary)'
+                                                : 'bg-(--error)/10 text-(--error)'
+                                        }`}>
+                                        {isPending ? '⏳ Проверяется' : isCorrect ? '✓ Верно' : '✗ Неверно'}
+                                    </span>
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            </section> */}
         </main>
     )
 }

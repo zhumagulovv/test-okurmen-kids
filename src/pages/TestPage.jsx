@@ -39,6 +39,15 @@ const formatTime = (seconds) => {
     return `${m}:${s}`;
 };
 
+// const normalizeAnswer = (q, answer) => {
+//     if (q.type === 'code') {
+//         return typeof answer === 'object'
+//             ? JSON.stringify(answer)
+//             : answer;
+//     }
+//     return answer;
+// };
+
 const TestPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -125,11 +134,23 @@ const TestPage = () => {
                     const answer = answers[q.id]
                     if (answer === undefined || answer === null || answer === '') return null
 
-                    return dispatch(submitAnswer({
+                    const payload = {
                         attempt_id: attemptId,
                         question_id: q.id,
-                        answer: answer,        // adjust field name to match your API
-                    })).unwrap()
+                    }
+                    if (q.type === 'single_choice') {
+                        payload.selected_options = [answer]  // API expects an array for options, even if it's single choice
+                    }
+                    else if (q.type === 'multiple_choice') {
+                        payload.selected_options = answer  // already an array
+                    } else if (q.type === 'text') {
+                        payload.answer_text = answer
+                    } else if (q.type === 'code') {
+                        payload.answer_text = typeof answer === 'object'
+                            ? JSON.stringify(answer)
+                            : answer
+                    }
+                    return dispatch(submitAnswer(payload)).unwrap()
                 }).filter(Boolean)
             )
 
