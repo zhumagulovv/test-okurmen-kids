@@ -31,14 +31,8 @@ const NamePage = () => {
             navigate('/test-page')
         }
         catch (error) {
-            console.error('Error creating attempt:', error)
+            throw new Error('Error creating attempt:', error)
         }
-    }
-
-    const handleBack = () => {
-        dispatch(clearSession())
-        localStorage.removeItem('sessionKey')
-        navigate('/entry-page')
     }
 
     if (!session) return null

@@ -34,7 +34,7 @@ export const endpoints = {
     validate: (data) => api.post('/api/v1/sessions/validate', data),
     startAttempt: (data) => api.post('/api/v1/attempt/start', data),
     submitAnswer: (data) => {
-        console.log('📤 submitAnswer payload:', data);
+        // console.log('📤 submitAnswer payload:', data);
         return api.post('/api/v1/attempt/answer', data);
     },
     finish: (data) => api.post('/api/v1/attempt/finish', data),

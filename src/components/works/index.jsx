@@ -1,4 +1,3 @@
-import React from 'react'
 import { TbPlayerPlay } from 'react-icons/tb'
 
 const HowItWorks = () => {

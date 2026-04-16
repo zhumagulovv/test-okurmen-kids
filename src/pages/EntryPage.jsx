@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
@@ -10,7 +10,7 @@ import { validateSession } from '../features/auth/sessionSlice'
 import logoImage from '../assets/logo.png'
 
 const EntryPage = () => {
-    const [code, setCode] = React.useState('')
+    const [code, setCode] = useState('')
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
@@ -19,8 +19,7 @@ const EntryPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (!code.trim()) {
-            error('Пожалуйста, введите ключ сессии')
-            return
+            throw new Error('Пожалуйста, введите ключ сессии')
         }
 
         localStorage.setItem('sessionKey', code)

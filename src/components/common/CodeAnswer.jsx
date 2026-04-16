@@ -98,7 +98,7 @@ const CodeAnswer = ({ language, value, onChange }) => {
                                         ${activeTab === id
                                             ? 'bg-(--surface-container-lowest) text-(--primary) font-bold border-x border-t border-(--outline-variant)/10'
                                             : 'hover:bg-(--surface-container-high) text-(--on-surface-variant) font-medium'
-                                        } disabled:opacity-30 disabled:cursor-not-allowed`}
+                                        } disabled:hidden disabled:cursor-not-allowed`}
                                 >
                                     <Icon className="text-2xl" />
                                     {label}
@@ -106,7 +106,7 @@ const CodeAnswer = ({ language, value, onChange }) => {
                             );
                         })}
                     </div>
-                    <div className="grow flex font-mono text-[14px] bg-(--surface-container-lowest) relative">
+                    <div className="grow flex h-full font-mono text-[14px] bg-(--surface-container-lowest) relative">
                         <CodeEditor
                             key={activeTab}
                             language={LANG_MAP[activeTab]}
@@ -117,7 +117,7 @@ const CodeAnswer = ({ language, value, onChange }) => {
                 </section>
 
                 {/* Preview for non-python */}
-                {questionType !== 'python' && (
+                {/* {questionType !== 'python' && (
                     <section className="grow flex flex-col bg-(--surface-container-lowest) rounded-3xl overflow-hidden border border-(--outline-variant)/10">
                         <div className="bg-(--surface-container-low) px-4 py-3 text-xs text-(--on-surface-variant) font-medium">
                             Предпросмотр
@@ -129,7 +129,7 @@ const CodeAnswer = ({ language, value, onChange }) => {
                             className="flex-1 w-full bg-white"
                         />
                     </section>
-                )}
+                )} */}
             </main>
         </section>
     );

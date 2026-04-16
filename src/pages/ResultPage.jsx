@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { BsFillCheckCircleFill } from 'react-icons/bs'
 import { MdOutlineErrorOutline, MdOutlineQuiz } from 'react-icons/md'
+
 import { clearAttempt } from '../features/attempt/attemptSlice'
 
 const ResultPage = () => {
