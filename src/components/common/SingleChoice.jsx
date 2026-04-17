@@ -1,18 +1,18 @@
 const SingleChoice = ({ options = [], name = 'question', value, onChange }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
-            {options.map(({ id, text }, i) => {
-                const letter = String.fromCharCode(65 + i);
-                const isChecked = value === id;
+            {options.map(({ text }, index) => {
+                const letter = String.fromCharCode(65 + index);
+                const isChecked = value === index;
 
                 return (
-                    <label key={id} className="group relative cursor-pointer block">
+                    <label key={index} className="group relative cursor-pointer block">
                         <input
                             type="radio"
                             name={name}
-                            value={id}
+                            value={index}
                             checked={isChecked}
-                            onChange={() => onChange(id)}
+                            onChange={() => onChange(index)}
                             className="absolute opacity-0 w-0 h-0"
                         />
                         <div className={`h-full p-6 rounded-(--xl) bg-(--surface-container-lowest) border-2 transition-all duration-200 

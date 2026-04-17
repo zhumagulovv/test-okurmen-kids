@@ -14,6 +14,7 @@ import {
     nextQuestion,
     prevQuestion,
     setCurrentIndex,
+    setQuizAnswer,
     startTimer,
 } from '../features/quiz/quizSlice';
 import { fetchResult, finishAttempt, submitAnswer } from '../features/attempt/attemptSlice';
@@ -52,8 +53,8 @@ const formatTime = (seconds) => {
  * Build the answer payload for a single question.
  * Returns null for empty / unanswered questions so callers can filter them out.
  */
-const buildAnswerPayload = (q, answers, attemptId) => {
-    const answer = answers[q.id];
+const buildAnswerPayload = (q, answers, attemptId, index) => {
+    const answer = answers[index];
     const isEmpty =
         answer === undefined ||
         answer === null ||
@@ -66,7 +67,8 @@ const buildAnswerPayload = (q, answers, attemptId) => {
 
     switch (q.question_type) {
         case 'single_choice':
-            return { ...base, selected_options: [answer] };
+            const optionId = q.options[answer]?.id
+            return { ...base, selected_options: [optionId] };
         case 'multiple_choice':
             return { ...base, selected_options: Array.isArray(answer) ? answer : [answer] };
         case 'text':
@@ -89,10 +91,10 @@ const TestPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const { currentIndex, elapsed } = useSelector((s) => s.quiz);
+    const { currentIndex, elapsed, answers } = useSelector((s) => s.quiz);
     const { questions, current } = useSelector((s) => s.attempt);
 
-    const [answers, setAnswers] = useState({});
+    // const [answers, setAnswers] = useState({});
     const [isExamActive, setIsExamActive] = useState(true);
 
     // ── Anti-cheat: single-execution lock ──────────────────────────────────
@@ -141,7 +143,7 @@ const TestPage = () => {
 
             // ── Submit all non-empty answers in parallel ───────────────────
             const payloads = snapshotQuestions
-                .map((q) => buildAnswerPayload(q, snapshotAnswers, attemptId))
+                .map((q, index) => buildAnswerPayload(q, snapshotAnswers, attemptId, index))
                 .filter(Boolean);
 
             await Promise.all(
@@ -263,9 +265,9 @@ const TestPage = () => {
 
     // ── Per-question autosave ────────────────────────────────────────────────
 
-    const handleAnswerChange = useCallback((questionId, value) => {
-        setAnswers((prev) => ({ ...prev, [questionId]: value }));
-    }, []);
+    // const handleAnswerChange = useCallback((questionId, value) => {
+    //     setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    // }, []);
 
     // ── Render ───────────────────────────────────────────────────────────────
 
@@ -338,7 +340,7 @@ const TestPage = () => {
 
                         <div className="grid grid-cols-5 gap-3">
                             {questions.map((q, i) => {
-                                const ans = answers[q.id];
+                                const ans = answers[i];
                                 const isAnswered =
                                     ans !== undefined &&
                                     ans !== '' &&
@@ -346,13 +348,13 @@ const TestPage = () => {
 
                                 return (
                                     <button
-                                        key={q.id ?? i}
+                                        key={i}
                                         onClick={() => dispatch(setCurrentIndex(i))}
                                         className={`aspect-square flex items-center justify-center rounded-(--xl) font-bold cursor-pointer transition-colors ${i === currentIndex
-                                                ? 'bg-(--primary) text-white shadow-lg ring-4 ring-(--primary)/20'
-                                                : isAnswered
-                                                    ? 'bg-(--secondary-container) text-(--on-secondary-container) border border-(--secondary)/30'
-                                                    : 'bg-(--surface-container-lowest) text-(--on-surface-variant) hover:bg-(--surface-container-high) border border-(--outline-variant)/10'
+                                            ? 'bg-(--primary) text-white shadow-lg ring-4 ring-(--primary)/20'
+                                            : isAnswered
+                                                ? 'bg-(--secondary-container) text-(--on-secondary-container) border border-(--secondary)/30'
+                                                : 'bg-(--surface-container-lowest) text-(--on-surface-variant) hover:bg-(--surface-container-high) border border-(--outline-variant)/10'
                                             }`}
                                     >
                                         {i + 1}
@@ -398,10 +400,14 @@ const TestPage = () => {
                                     name={`question_${question.id}`}
                                     language={normalizedLanguage}
                                     value={
-                                        answers[question.id] ??
-                                        (question.type === 'multiple_choice' ? [] : '')
+                                        // answers[question.id] ??
+                                        // (question.type === 'multiple_choice' ? [] : '')
+                                        answers[currentIndex] ?? (question.question_type === 'multiple_choice' ? [] : '')
                                     }
-                                    onChange={(val) => handleAnswerChange(question.id, val)}
+                                    onChange={
+                                        // (value) => handleAnswerChange(question.id, value)
+                                        (value) => dispatch(setQuizAnswer({ index: currentIndex, value }))
+                                    }
                                 />
                             </>
                         )}

@@ -6,6 +6,7 @@ const quizSlice = createSlice({
         currentIndex: 0,
         elapsed: 0,
         isRunning: false,
+        answers: []
     },
     reducers: {
         nextQuestion: (state) => {
@@ -38,10 +39,16 @@ const quizSlice = createSlice({
             state.isRunning = false;
         },
 
+        setQuizAnswer: (state, action) => {
+            const { index, value } = action.payload;
+            state.answers[index] = value;
+        },
+
         resetQuiz: (state) => {        // ✅ added — resets everything
             state.currentIndex = 0;
             state.elapsed = 0;
             state.isRunning = false;
+            state.answers = [];
         },
     },
 });
@@ -54,7 +61,8 @@ export const {
     startTimer,
     stopTimer,
     resetQuiz,
-    setElapsed
+    setElapsed,
+    setQuizAnswer
 } = quizSlice.actions;
 
 export default quizSlice.reducer;
