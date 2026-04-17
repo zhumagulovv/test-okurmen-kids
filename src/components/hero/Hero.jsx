@@ -67,12 +67,12 @@ const Hero = () => {
                         <div className="flex flex-col gap-4 relative z-10">
                             <button
                                 onClick={() => navigate("/entry-page")}
-                                className="w-full py-5 rounded-2xl font-bold text-lg shadow-[0_12px_24px_-8px_rgba(0,87,189,0.5)] hover:shadow-[0_16px_32px_-8px_rgba(0,87,189,0.6)] hover:-translate-y-0.5 active:scale-[0.98] transition-all flex items-center justify-center gap-3 bg-(--primary) text-(--on-primary) cursor-pointer">
+                                className="w-full py-5 rounded-2xl font-bold text-md shadow-[0_12px_24px_-8px_rgba(0,87,189,0.5)] hover:shadow-[0_16px_32px_-8px_rgba(0,87,189,0.6)] hover:-translate-y-0.5 active:scale-[0.98] transition-all flex items-center justify-center gap-3 bg-(--primary) text-(--on-primary) cursor-pointer">
                                 Начать итоговый экзамен
                                 <IoRocketSharp />
                             </button>
                             <button
-                                className="w-full bg-white text-secondary py-4 rounded-2xl font-bold text-md border-2 active:scale-[0.98] transition-all flex items-center justify-center gap-2 secondary-border-hover secondary-background-hover">
+                                className="w-full bg-white text-(--secondary) py-4 rounded-2xl font-bold text-md border-2 active:scale-[0.98] transition-all flex items-center justify-center gap-2 secondary-border-hover secondary-background-hover">
                                 <TbSchool className='text-2xl ' />
                                 Войти в режим практики
                             </button>

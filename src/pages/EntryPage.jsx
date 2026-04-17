@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
 import { FaArrowRight } from 'react-icons/fa'
-import { MdHelpOutline, MdOutlineVerifiedUser } from 'react-icons/md'
+import { MdClose, MdHelpOutline, MdOutlineVerifiedUser } from 'react-icons/md'
 
 import { validateSession } from '../features/auth/sessionSlice'
 
@@ -39,7 +39,8 @@ const EntryPage = () => {
             </div>
             <div className="absolute bottom-[-5%] right-[-5%] w-[35%] h-[35%] rounded-full blur-[100px] seventh-background">
             </div>
-            <div className="w-full max-w-lg z-10">
+            <div className="w-full max-w-lg z-10 relative">
+                <MdClose onClick={() => navigate("/")} className='text-3xl absolute top-2 right-2 cursor-pointer' />
                 <div
                     className="bg-surface-container-lowest rounded-xl p-8 md:p-12 shadow-[0_8px_24px_rgba(36,44,81,0.06)] flex flex-col items-center text-center">
                     <div className="mb-8 w-20 h-20 bg-surface-container-high rounded-full flex items-center justify-center">

@@ -22,23 +22,6 @@ const routes = createBrowserRouter([
       { path: '/', element: <HomePage /> },
       { path: '/leaderboard', element: <LiderBortPage /> },
       { path: "/table", element: <TableResultPage /> },
-      { path: '/entry-page', element: <EntryPage /> },
-      {
-        path: '/name-page',
-        element: (
-          <ProtectedRoute>
-            <NamePage />
-          </ProtectedRoute>
-        )
-      },
-      {
-        path: "/result-page",
-        element: (
-          <ProtectedRoute>
-            <ResultPage />
-          </ProtectedRoute>
-        )
-      }
     ]
   },
   {
@@ -48,9 +31,18 @@ const routes = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
+      { path: '/entry-page', element: <EntryPage /> },
+      {
+        path: "/name-page",
+        element: <NamePage />
+      },
       {
         path: "/test-page",
         element: <TestPage />
+      },
+      {
+        path: "/result-page",
+        element: <ResultPage />
       }
     ]
   },

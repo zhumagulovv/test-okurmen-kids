@@ -279,8 +279,8 @@ const TestPage = () => {
     return (
         <section className="bg-(--surface-container-lowest) text-(--on-surface) min-h-screen flex flex-col">
             {/* ── Header ── */}
-            <header className="w-full top-0 sticky z-50 bg-(--surface-container-lowest) py-4 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-6 w-full md:w-auto">
+            {/* <header className="w-full top-0 sticky z-50 bg-(--surface-container-lowest) px-4 md:px-6 py-12 max-w-390 flex flex-col md:flex-col justify-between items-center gap-4 mx-auto">
+                <div className="flex items-center gap-6 md:w-auto">
                     <div className="flex flex-col">
                         <span className="text-(--on-surface-variant) font-label text-xs uppercase tracking-widest mb-1">
                             Текущий прогресс
@@ -310,6 +310,73 @@ const TestPage = () => {
                     <span className="font-headline font-extrabold text-xl text-(--tertiary-dim) tabular-nums">
                         {formatTime(elapsed)}
                     </span>
+                </div>
+
+                <div className="w-full md:w-auto">
+                    <button
+                        onClick={handleFinish}
+                        className="w-full md:w-auto px-10 py-4 rounded-xl bg-linear-to-r from-(--primary) to-(--primary-container) text-white font-headline font-extrabold text-lg shadow-xl shadow-(--primary)/20 hover:shadow-2xl hover:shadow-(--primary)/30 transition-all active:scale-95 flex items-center justify-center gap-3"
+                    >
+                        Отправить
+                        <MdOutlineTaskAlt />
+                    </button>
+                </div>
+            </header> */}
+
+            <header className="w-full sticky top-0 z-50 bg-(--surface-container-lowest) px-4 md:px-6 py-4">
+                <div className="max-w-382.5 md:max-w-[1530px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+
+                    {/* LEFT: Progress text */}
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
+                        <span className="text-(--on-surface-variant) font-label text-xs uppercase tracking-widest mb-1">
+                            Текущий прогресс
+                        </span>
+
+                        <div className="flex items-center gap-3">
+                            <span className="font-headline font-bold text-lg text-(--primary)">
+                                Вопрос {currentIndex + 1} из {total}
+                            </span>
+
+                            <span className="text-(--on-surface-variant) font-medium text-sm bg-(--surface-container-low) px-2 py-1 rounded-lg">
+                                {progress}% завершено
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* CENTER: Progress bar */}
+                    <div className="w-full md:flex-1 md:px-6 order-3 md:order-0">
+                        <div className="h-2 w-full bg-(--surface-container-high) rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-(--primary) rounded-full transition-all duration-500"
+                                style={{ width: `${progress}%` }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* RIGHT: Timer + Button */}
+                    <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+
+                        {/* Timer */}
+                        <div className="flex items-center gap-2 bg-(--tertiary-container)/10 border border-(--tertiary-container)/20 px-4 py-2 rounded-xl">
+                            <span className="material-symbols-outlined text-(--tertiary-dim)">
+                                timer
+                            </span>
+                            <span className="font-headline font-extrabold text-xl text-(--tertiary-dim) tabular-nums">
+                                {formatTime(elapsed)}
+                            </span>
+                        </div>
+
+                        {/* Button */}
+                        <button
+                            onClick={handleFinish}
+                            className="w-full md:w-auto px-8 py-3 rounded-xl bg-linear-to-r from-(--primary) to-(--primary-container) text-white font-headline font-extrabold text-lg shadow-xl shadow-(--primary)/20 hover:shadow-2xl hover:shadow-(--primary)/30 transition-all active:scale-95 flex items-center justify-center gap-3"
+                        >
+                            Отправить
+                            <MdOutlineTaskAlt />
+                        </button>
+
+                    </div>
+
                 </div>
             </header>
 
@@ -414,8 +481,8 @@ const TestPage = () => {
                     </div>
 
                     {/* ── Footer nav ── */}
-                    <footer className="flex flex-col md:flex-row justify-between items-center gap-4 bg-(--surface-container-low) p-6 rounded-(--xl)">
-                        <div className="flex gap-4 w-full md:w-auto">
+                    {/* <footer className="flex flex-col md:flex-row justify-between items-center gap-4 bg-(--surface-container-low) p-6 rounded-(--xl)">
+                        <div className="flex gap-10 md:w-auto">
                             <button
                                 onClick={() => dispatch(prevQuestion())}
                                 disabled={currentIndex === 0}
@@ -433,16 +500,30 @@ const TestPage = () => {
                                 <FaChevronRight />
                             </button>
                         </div>
+                    </footer> */}
 
-                        <div className="w-full md:w-auto">
-                            <button
-                                onClick={handleFinish}
-                                className="w-full md:w-auto px-10 py-4 rounded-xl bg-linear-to-r from-(--primary) to-(--primary-container) text-white font-headline font-extrabold text-lg shadow-xl shadow-(--primary)/20 hover:shadow-2xl hover:shadow-(--primary)/30 transition-all active:scale-95 flex items-center justify-center gap-3"
-                            >
-                                Отправить
-                                <MdOutlineTaskAlt />
-                            </button>
-                        </div>
+                    <footer className="flex flex-col md:flex-row items-center justify-between gap-4 bg-(--surface-container-low) p-6 rounded-(--xl) w-full">
+
+                        {/* LEFT BUTTON */}
+                        <button
+                            onClick={() => dispatch(prevQuestion())}
+                            disabled={currentIndex === 0}
+                            className="flex items-center gap-2 px-6 py-4 rounded-(--xl) font-headline font-bold text-(--on-surface-variant) bg-(--surface-container-highest) hover:bg-(--surface-container-high) transition-all active:scale-95 disabled:opacity-50"
+                        >
+                            <FaChevronLeft />
+                            Предыдущий
+                        </button>
+
+                        {/* RIGHT BUTTON */}
+                        <button
+                            onClick={() => dispatch(nextQuestion())}
+                            disabled={currentIndex === total - 1}
+                            className="flex items-center gap-2 px-6 py-4 rounded-(--xl) font-headline font-bold text-(--primary) bg-(--primary)/10 hover:bg-(--primary)/20 transition-all active:scale-95"
+                        >
+                            Следующий
+                            <FaChevronRight />
+                        </button>
+
                     </footer>
                 </section>
             </main>
