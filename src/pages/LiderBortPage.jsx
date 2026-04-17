@@ -189,7 +189,7 @@ const LiderBortPage = () => {
                         </div>
                         <div>
                             <h1 className="font-headline text-4xl md:text-5xl font-extrabold text-white tracking-tight">
-                                Лидер борт
+                                Таблица лидеров
                             </h1>
                             <p className="text-white/70 mt-1 text-lg">
                                 Рейтинг лучших студентов по результатам тестирования

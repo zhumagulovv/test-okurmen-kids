@@ -16,7 +16,7 @@ const Footer = () => {
                     <div className="space-y-4">
                         <h5 className="font-bold text-on-surface">Навигация</h5>
                         <ul className="space-y-2 text-sm text-on-surface-variant">
-                            <li><a className="transition-colors text-hover" href="#">Главная</a></li>
+                            <li><a className="transition-colors text-hover" href="/">Главная</a></li>
                             <li><a className="transition-colors text-hover" href="#">Как использовать</a></li>
                             <li><a className="transition-colors text-hover" href="#">Подготовка к экзамену</a></li>
                         </ul>
