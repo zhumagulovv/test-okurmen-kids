@@ -39,6 +39,9 @@ export const endpoints = {
     },
     finish: (data) => api.post('/api/v1/attempt/finish', data),
     getResult: (id) => api.get(`/api/v1/attempt/${id}/result`),
+    leaderboard: () => api.get("/api/v2/leaderboard"),
+    leaderboardId: (id) => api.get(`/api/v2/sessions/${id}/leaderboard`),
+    resultTable: (id) => api.get(`/api/v2/sessions/${id}/result-table`)
 };
 
 export default api;
