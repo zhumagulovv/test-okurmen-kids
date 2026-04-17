@@ -31,7 +31,7 @@ api.interceptors.response.use(
 );
 
 export const endpoints = {
-    validate: (data) => api.post('/api/v1/sessions/validate', data),
+    validate: (data) => api.post    ('/api/v1/sessions/validate', data),
     startAttempt: (data) => api.post('/api/v1/attempt/start', data),
     submitAnswer: (data) => {
         // console.log('📤 submitAnswer payload:', data);
@@ -41,7 +41,8 @@ export const endpoints = {
     getResult: (id) => api.get(`/api/v1/attempt/${id}/result`),
     leaderboard: () => api.get("/api/v2/leaderboard"),
     leaderboardId: (id) => api.get(`/api/v2/sessions/${id}/leaderboard`),
-    resultTable: (id) => api.get(`/api/v2/sessions/${id}/result-table`)
+    resultTable: (session_id) => api.get(`/api/v2/sessions/${session_id}/result-table`),
+    sessions: () => api.get('/api/v1/sessions/')
 };
 
 export default api;
