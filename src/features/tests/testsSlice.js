@@ -3,9 +3,9 @@ import { endpoints } from "../../service/api";
 
 export const fetchAllTest = createAsyncThunk(
     "tests/fetchAll",
-    async (_, { rejectWithValue }) => {
+    async (level, { rejectWithValue }) => {
         try {
-            const res = await endpoints.tests();
+            const res = await endpoints.tests(level);
             return res
         } catch (e) {
             return rejectWithValue(e.message);

@@ -43,7 +43,7 @@ export const endpoints = {
     finish: (data) => api.post('/api/v1/attempt/finish', data),
     getResult: (id) => api.get(`/api/v1/attempt/${id}/result`),
     sessions: () => api.get('/api/v1/sessions/'),
-    tests: () => api.get('/api/v1/tests/'),
+    tests: (level) => api.get(`/api/v1/tests/${level ? `?level=${level}` : ''}`),
     testsID: (id) => api.get(`/api/v1/tests/${id}/`),
 
     leaderboard: () => api.get("/api/v2/leaderboard"),
