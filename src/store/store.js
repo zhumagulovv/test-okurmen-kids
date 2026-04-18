@@ -7,6 +7,7 @@ import resultTableReducer from "../features/resultTable/resultTableSlice"
 import sessionReducer from "../features/auth/sessionSlice"
 import sessionIdReducer from "../features/sessionId/sessionIdSlice"
 import testsReducer from "../features/tests/testsSlice"
+import trainingSessionReducer from "../features/training/TrainingSessionSlice"
 
 export const store = configureStore({
     reducer: {
@@ -16,7 +17,8 @@ export const store = configureStore({
         quiz: quizReducer,
         leaderboard: leaderboardReducer,
         result: resultTableReducer,
-        tests: testsReducer
+        tests: testsReducer,
+        trainingSession: trainingSessionReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

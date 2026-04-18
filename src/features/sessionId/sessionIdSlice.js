@@ -8,7 +8,7 @@ export const fetchSessions = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await endpoints.sessions();
-            return response.results;
+            return response;
 
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || "Failed to fetch sessions");

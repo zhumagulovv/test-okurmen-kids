@@ -1,0 +1,133 @@
+import { useEffect, useRef, useState } from "react"
+import { GrFormNextLink, GrFormPreviousLink } from "react-icons/gr"
+
+const slides = [
+    {
+        tag: "Programming Track",
+        title: "Master the Art of Python",
+        description: "Start your journey into backend development.",
+        image:
+            "https://lh3.googleusercontent.com/aida-public/AB6AXuDCG-r_Cu6GcsW01BnoK2wPTeYY2nKCI-GOeGEW2Q4-opL7ia93uGKYwCQOlr0sHoFnZgKFwkKLOY9L2TfshPMhGmRBsJj-gAxxuFIfHWdbmwBqHDjD6CI4VYdS9tbQ554o7j9ERK5XL2Rm9yOPjrDBSNk15RENpujcIzICtEBA3KfzqyRCtjDgBnmibd_hK7X2DhVEkPDISfoCfMG8jvXPgpzaq3L7Agyjn4tk4kkNaaYqMOAXFQvyalG8ZcSwWaS1lnulkv3o2HA"
+    },
+    {
+        tag: "Frontend Track",
+        title: "JavaScript Mastery",
+        description: "Build dynamic UI and web apps.",
+        image: "https://cdn-icons-png.flaticon.com/512/5968/5968292.png"
+    },
+    {
+        tag: "Web Basics",
+        title: "HTML & CSS",
+        description: "Create responsive layouts.",
+        image: "https://cdn-icons-png.flaticon.com/512/732/732212.png"
+    }
+]
+
+export default function ProCarousel() {
+    const [index, setIndex] = useState(0)
+    const startX = useRef(0)
+    const endX = useRef(0)
+
+    // AUTO SLIDER
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIndex((prev) => (prev + 1) % slides.length)
+        }, 4000)
+
+        return () => clearInterval(interval)
+    }, [])
+
+    const nextSlide = () =>
+        setIndex((prev) => (prev + 1) % slides.length)
+
+    const prevSlide = () =>
+        setIndex((prev) => (prev - 1 + slides.length) % slides.length)
+
+    // SWIPE
+    const handleTouchStart = (e) => {
+        startX.current = e.touches[0].clientX
+    }
+
+    const handleTouchEnd = (e) => {
+        endX.current = e.changedTouches[0].clientX
+
+        const diff = startX.current - endX.current
+
+        if (diff > 50) nextSlide()
+        if (diff < -50) prevSlide()
+    }
+
+    return (
+        <div
+            className="relative overflow-hidden rounded-xl mb-12 min-h-75 md:min-h-105 bg-linear-to-br from-(--primary) to-(--primary-container) text-(--on-primary)"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+        >
+            {/* TRACK */}
+            <div
+                className="flex h-full items-center transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(-${index * 100}%)` }}
+            >
+                {slides.map((slide, i) => (
+                    <div
+                        key={i}
+                        className="min-w-full h-full flex flex-col md:flex-row items-center justify-center gap-8 p-6 md:p-12"
+                    >
+                        {/* TEXT */}
+                        <div className="flex-1 text-center md:text-left">
+                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 mb-4">
+                                <span className="text-xs font-bold uppercase">
+                                    {slide.tag}
+                                </span>
+                            </div>
+
+                            <h2 className="text-3xl md:text-5xl font-extrabold mb-4">
+                                {slide.title}
+                            </h2>
+
+                            <p className="text-base md:text-lg opacity-90 max-w-xl mx-auto md:mx-0">
+                                {slide.description}
+                            </p>
+                        </div>
+
+                        {/* IMAGE */}
+                        <div className="flex-1 flex justify-center">
+                            <img
+                                src={slide.image}
+                                alt={slide.title}
+                                className="w-36 md:w-52 h-36 md:h-52 object-contain"
+                            />
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* BUTTONS */}
+            <button
+                onClick={prevSlide}
+                className="absolute left-3 md:left-5 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 transition px-3 py-3 rounded-full"
+            >
+                <GrFormPreviousLink className="text-2xl" />
+            </button>
+
+            <button
+                onClick={nextSlide}
+                className="absolute right-3 md:right-5 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 transition px-3 py-3 rounded-full"
+            >
+                <GrFormNextLink className="text-2xl" />
+            </button>
+
+            {/* DOTS */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                {slides.map((_, i) => (
+                    <div
+                        key={i}
+                        onClick={() => setIndex(i)}
+                        className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full cursor-pointer transition ${i === index ? "bg-white" : "bg-white/40"
+                            }`}
+                    />
+                ))}
+            </div>
+        </div>
+    )
+}

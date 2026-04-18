@@ -81,34 +81,6 @@ const TableResultPage = () => {
                             <p className="text-(--on-surface-variant) text-lg mb-4">
                                 Подробный анализ прогресса студентов и результатов экзаменов.
                             </p>
-
-                            {/* Session selector — only shown when multiple sessions exist */}
-                            {/* {sessionOptions.length > 1 && (
-                                <div className="flex items-center gap-3">
-                                    <span className="text-sm text-(--on-surface-variant) font-medium whitespace-nowrap">
-                                        Сессия:
-                                    </span>
-                                    <Dropdown
-                                        options={sessionOptions.map((s) => s.label)}
-                                        value={sessionOptions.find((s) => s.value === activeSessionId)?.label || ''}
-                                        onChange={(label) => {
-                                            const session = sessionOptions.find((s) => s.label === label)
-                                            if (session) dispatch(setActiveSession(session.value))
-                                        }}
-                                        placeholder="Выберите сессию"
-                                    />
-                                </div>
-                            )} */}
-
-                            {/* Active session ID badge */}
-                            {/* {activeSession && (
-                                <p className="mt-2 text-xs text-(--on-surface-variant)">
-                                    ID сессии:{' '}
-                                    <code className="bg-(--surface-container) px-1.5 py-0.5 rounded text-xs">
-                                        {activeSession.id}
-                                    </code>
-                                </p>
-                            )} */}
                         </div>
 
                         {/* Top students card */}
