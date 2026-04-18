@@ -13,6 +13,10 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
     (config) => {
+        // const sessionKey = localStorage.getItem('sessionKey')
+        // if (sessionKey) {
+        //     config.headers.Authorization = `Session ${sessionKey}`
+        // }
         // You can add auth tokens here if needed
         return config;
     },
@@ -31,18 +35,20 @@ api.interceptors.response.use(
 );
 
 export const endpoints = {
-    validate: (data) => api.post    ('/api/v1/sessions/validate', data),
+    validate: (data) => api.post('/api/v1/sessions/validate', data),
     startAttempt: (data) => api.post('/api/v1/attempt/start', data),
     submitAnswer: (data) => {
-        // console.log('📤 submitAnswer payload:', data);
         return api.post('/api/v1/attempt/answer', data);
     },
     finish: (data) => api.post('/api/v1/attempt/finish', data),
     getResult: (id) => api.get(`/api/v1/attempt/${id}/result`),
+    sessions: () => api.get('/api/v1/sessions/'),
+    tests: () => api.get('/api/v1/tests/'),
+    testsID: (id) => api.get(`/api/v1/tests/${id}/`),
+
     leaderboard: () => api.get("/api/v2/leaderboard"),
     leaderboardId: (id) => api.get(`/api/v2/sessions/${id}/leaderboard`),
-    resultTable: (session_id) => api.get(`/api/v2/sessions/${session_id}/result-table`),
-    sessions: () => api.get('/api/v1/sessions/')
+    resultTable: (session_id) => api.get(`/api/v2/sessions/${session_id}/results-table`),
 };
 
 export default api;

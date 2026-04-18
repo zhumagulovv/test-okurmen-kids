@@ -5,7 +5,7 @@ import Dropdown from '../components/common/Dropdown'
 import { LuChevronLeft, LuChevronRight } from 'react-icons/lu'
 import { useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { resetResult, selectAverageScore, selectCurrentPage, selectFilteredStudents, selectFilters, selectGroupOptions, selectMeta, selectPagedStudents, selectResultError, selectResultStatus, selectTopStudents, selectTotalPages, setGroupFilter, setPage, setStatusFilter } from '../features/resultTable/resultTableSlice'
+import { fetchResultTable, resetResult, selectAverageScore, selectCurrentPage, selectFilteredStudents, selectFilters, selectGroupOptions, selectMeta, selectPagedStudents, selectResultError, selectResultStatus, selectTopStudents, selectTotalPages, setGroupFilter, setPage, setSearch, setStatusFilter } from '../features/resultTable/resultTableSlice'
 import SkeletonCard from '../components/common/SkeletonCard'
 import Pagination from '../components/common/Pagination'
 import StudentCard from '../components/common/StudentCard'
@@ -34,8 +34,8 @@ const TableResultPage = () => {
     const error = useSelector(selectResultError)
     const avgScore = useSelector(selectAverageScore)
     const topStudents = useSelector(selectTopStudents)
-
     // 1. Fetch sessions list on mount; clean up on unmount
+
     useEffect(() => {
         dispatch(fetchSessions())
         return () => {
@@ -47,17 +47,16 @@ const TableResultPage = () => {
     // 2. Whenever activeSessionId changes, re-fetch the result table
     useEffect(() => {
         if (activeSessionId) {
-            dispatch(resetResult())
             dispatch(fetchResultTable(activeSessionId))
         }
     }, [dispatch, activeSessionId])
 
     const handleSessionChange = useCallback(
-        (value) => dispatch(setActiveSession(Number(value))),
+        (value) => dispatch(setActiveSession(value ?? null)),
         [dispatch]
     )
     const handleSearch = useCallback(
-        (e) => dispatch(setSearch(e.target.value)),
+        (e) => dispatch(setSearch(e.target.value))
         [dispatch]
     )
     const handleGroupChange = useCallback((val) => dispatch(setGroupFilter(val)), [dispatch])
@@ -84,34 +83,32 @@ const TableResultPage = () => {
                             </p>
 
                             {/* Session selector — only shown when multiple sessions exist */}
-                            {sessionOptions.length > 1 && (
+                            {/* {sessionOptions.length > 1 && (
                                 <div className="flex items-center gap-3">
                                     <span className="text-sm text-(--on-surface-variant) font-medium whitespace-nowrap">
                                         Сессия:
                                     </span>
-                                    <select
-                                        className="bg-(--surface-container-lowest) border border-(--surface-container) rounded-xl py-2 px-3 text-sm text-(--on-surface) focus:ring-2 focus:ring-(--primary)/40"
-                                        value={activeSessionId ?? ''}
-                                        onChange={(e) => handleSessionChange(e.target.value)}
-                                    >
-                                        {sessionOptions.map((opt) => (
-                                            <option key={opt.value} value={opt.value}>
-                                                {opt.label}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <Dropdown
+                                        options={sessionOptions.map((s) => s.label)}
+                                        value={sessionOptions.find((s) => s.value === activeSessionId)?.label || ''}
+                                        onChange={(label) => {
+                                            const session = sessionOptions.find((s) => s.label === label)
+                                            if (session) dispatch(setActiveSession(session.value))
+                                        }}
+                                        placeholder="Выберите сессию"
+                                    />
                                 </div>
-                            )}
+                            )} */}
 
                             {/* Active session ID badge */}
-                            {activeSession && (
+                            {/* {activeSession && (
                                 <p className="mt-2 text-xs text-(--on-surface-variant)">
                                     ID сессии:{' '}
                                     <code className="bg-(--surface-container) px-1.5 py-0.5 rounded text-xs">
                                         {activeSession.id}
                                     </code>
                                 </p>
-                            )}
+                            )} */}
                         </div>
 
                         {/* Top students card */}
@@ -181,18 +178,22 @@ const TableResultPage = () => {
                             />
                         </div>
                         <div className="flex items-center gap-3 w-full lg:w-auto">
-                            <Dropdown
-                                options={groupOptions}
-                                value={filters.group || 'Все группы'}
-                                onChange={handleGroupChange}
-                                placeholder="Все группы"
-                            />
-                            <Dropdown
-                                options={RESULT_STATUS_OPTIONS}
-                                value={filters.status || 'Любой статус'}
-                                onChange={handleStatusChange}
-                                placeholder="Любой статус"
-                            />
+                            {sessionOptions.length > 1 && (
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm text-(--on-surface-variant) font-medium whitespace-nowrap">
+                                        Сессия:
+                                    </span>
+                                    <Dropdown
+                                        options={sessionOptions.map((s) => s.label)}
+                                        value={sessionOptions.find((s) => s.value === activeSessionId)?.label || ''}
+                                        onChange={(label) => {
+                                            const session = sessionOptions.find((s) => s.label === label)
+                                            if (session) dispatch(setActiveSession(session.value))
+                                        }}
+                                        placeholder="Выберите сессию"
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>
@@ -225,7 +226,7 @@ const TableResultPage = () => {
                         {isLoading
                             ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
                             : students.length > 0
-                                ? students.map((student) => <StudentCard key={student.id} student={student} />)
+                                ? students.map((student) => <StudentCard key={student.attempt_id} student={student} />)
                                 : status === 'succeeded' && (
                                     <div className="text-center py-16 text-(--on-surface-variant)">
                                         <p className="text-lg font-medium">Студенты не найдены</p>

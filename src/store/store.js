@@ -1,11 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 
 import attemptReducer from "../features/attempt/attemptSlice"
+import leaderboardReducer from "../features/leaderboard/leaderboardSlice"
+import quizReducer from "../features/quiz/quizSlice"
+import resultTableReducer from "../features/resultTable/resultTableSlice"
 import sessionReducer from "../features/auth/sessionSlice"
 import sessionIdReducer from "../features/sessionId/sessionIdSlice"
-import quizReducer from "../features/quiz/quizSlice"
-import leaderboardReducer from "../features/leaderboard/leaderboardSlice"
-import resultTableReducer from "../features/resultTable/resultTableSlice"
+import testsReducer from "../features/tests/testsSlice"
 
 export const store = configureStore({
     reducer: {
@@ -14,7 +15,8 @@ export const store = configureStore({
         attempt: attemptReducer,
         quiz: quizReducer,
         leaderboard: leaderboardReducer,
-        result: resultTableReducer
+        result: resultTableReducer,
+        tests: testsReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

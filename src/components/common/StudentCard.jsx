@@ -1,3 +1,5 @@
+import { RxAvatar } from "react-icons/rx"
+
 const STATUS_STYLES = {
     Completed: 'bg-green-100 text-green-700',
     'In Progress': 'bg-blue-100 text-blue-700',
@@ -32,23 +34,17 @@ function StudentCard({ student }) {
     return (
         <div className="group bg-(--surface-container-lowest) hover:bg-white transition-all duration-300 rounded-2xl p-4 md:p-6 shadow-[0_4px_12px_rgba(36,44,81,0.02)] hover:shadow-[0_20px_40px_rgba(36,44,81,0.08)] flex flex-col md:flex-row items-center gap-6">
             {/* Avatar */}
-            <div className="w-16 h-16 rounded-2xl bg-(--secondary-container) overflow-hidden shrink-0">
-                {student.avatar ? (
-                    <img className="w-full h-full object-cover" src={student.avatar} alt={student.name} />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xl font-black text-(--on-secondary-container)">
-                        {student.name?.[0] ?? '?'}
-                    </div>
-                )}
+            <div className="w-16 h-16 rounded-2xl bg-(--secondary-container) overflow-hidden shrink-0 flex items-center justify-center">
+                <RxAvatar className="text-4xl" />
             </div>
 
             {/* Name + group */}
             <div className="flex-1 text-center md:text-left">
                 <h4 className="text-xl font-bold text-(--on-surface) group-hover:text-(--primary) transition-colors">
-                    {student.name}
+                    {student.student_name}
                 </h4>
                 <p className="text-(--on-surface-variant) font-medium">
-                    Group: <span className="text-(--on-surface)">{student.group}</span>
+                    GroupID: <code className="text-(--on-surface)">{student.attempt_id.slice(0, 10)}...</code>
                 </p>
             </div>
 
@@ -57,8 +53,8 @@ function StudentCard({ student }) {
                 <div>
                     <p className="text-xs uppercase tracking-wider text-(--on-surface-variant) font-bold mb-1">Date</p>
                     <p className="font-bold">
-                        {student.date
-                            ? new Date(student.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                        {student.finished_at
+                            ? new Date(student.finished_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                             : '—'}
                     </p>
                 </div>

@@ -8,10 +8,10 @@ export const fetchResultTable = createAsyncThunk(
     async (session_id, { rejectWithValue }) => {
         try {
             const response = await endpoints.resultTable(session_id);
-            console.log(response)
-            return response.data;
+            console.log(response.results)
+            return response;
         } catch (err) {
-            return rejectWithValue(err.response?.data?.message || "Failed to fetch results");
+            return rejectWithValue(err.message || "Failed to fetch results");
         }
     }
 );
@@ -80,11 +80,21 @@ const resultSlice = createSlice({
             .addCase(fetchResultTable.pending, (state) => {
                 state.status = "loading";
                 state.error = null;
+                state.currentPage = 1
             })
             .addCase(fetchResultTable.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                // Adjust these keys to match your actual API response shape
-                state.students = action.payload.students ?? action.payload.results ?? [];
+
+                const payload = action.payload;
+
+                if (Array.isArray(payload)) {
+                    state.students = payload
+                } else {
+                    // Adjust these keys to match your actual API response shape
+                    state.students = action.payload.students ?? action.payload.results ?? [];
+                }
+
+
                 state.meta = {
                     total: action.payload.total ?? state.students.length,
                     page: action.payload.page ?? 1,

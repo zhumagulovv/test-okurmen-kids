@@ -1,3 +1,5 @@
+import { LuChevronLeft, LuChevronRight } from "react-icons/lu"
+
 function Pagination({ currentPage, totalPages, onPageChange }) {
     const pages = []
 

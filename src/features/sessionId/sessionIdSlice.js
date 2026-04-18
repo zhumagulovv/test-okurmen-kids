@@ -8,7 +8,8 @@ export const fetchSessions = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await endpoints.sessions();
-            return response.data;
+            return response.results;
+
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || "Failed to fetch sessions");
         }
@@ -26,7 +27,7 @@ const initialState = {
 
 // ─── Slice ─────────────────────────────────────────────────────────────────────
 
-const sessionSlice = createSlice({
+const sessionIDSlice = createSlice({
     name: "sessionID",
     initialState,
     reducers: {
@@ -48,6 +49,13 @@ const sessionSlice = createSlice({
 
                 // Handle both array response and paginated { results: [] } shape
                 const raw = action.payload;
+
+                if (!raw) {
+                    state.sessionsID = []
+                    state.activeSessionId = null
+                    return
+                }
+
                 state.sessionsID = Array.isArray(raw)
                     ? raw
                     : (raw.results ?? raw.sessionsID ?? []);
@@ -57,6 +65,7 @@ const sessionSlice = createSlice({
                 const active = state.sessionsID.find(
                     (s) => s.is_active || s.status === "active" || s.status === "open"
                 );
+
                 state.activeSessionId = (active ?? state.sessionsID[0])?.id ?? null;
             })
             .addCase(fetchSessions.rejected, (state, action) => {
@@ -66,12 +75,12 @@ const sessionSlice = createSlice({
     },
 });
 
-export const { setActiveSession, resetSessions } = sessionSlice.actions;
-export default sessionSlice.reducer;
+export const { setActiveSession, resetSessions } = sessionIDSlice.actions;
+export default sessionIDSlice.reducer;
 
 // ─── Selectors ─────────────────────────────────────────────────────────────────
 
-export const selectSessions = (state) => state.sessionID.sessions;
+export const selectSessions = (state) => state.sessionID.sessionsID;
 export const selectActiveSessionId = (state) => state.sessionID.activeSessionId;
 export const selectSessionStatus = (state) => state.sessionID.status;
 export const selectSessionError = (state) => state.sessionID.error;
@@ -81,7 +90,7 @@ export const selectActiveSession = createSelector(
     selectSessions,
     selectActiveSessionId,
     (sessions, id) => {
-        if(!Array.isArray(sessions)) return null
+        if (!Array.isArray(sessions)) return null
 
         return sessions.find((s) => s.id === id) ?? null
     }

@@ -74,12 +74,12 @@ const Hero = () => {
                             <button
                                 className="w-full bg-white text-(--secondary) py-4 rounded-2xl font-bold text-md border-2 active:scale-[0.98] transition-all flex items-center justify-center gap-2 secondary-border-hover secondary-background-hover">
                                 <TbSchool className='text-2xl ' />
-                                Войти в режим практики
+                                GO! в режим практики
                             </button>
                         </div>
                         <div className="bg-surface-container-low/50 p-4 rounded-xl border border-primary/5">
                             <p className="text-center text-xs text-on-surface-variant leading-relaxed">
-                                Нужна помощь? <a href='tel:+996702247092' className="text-color font-bold">руководитель команды тренеров</a> для кода идентификации класса, чтобы начать.
+                                Нужна помощь? <a href='tel:+996702247092' className="text-color font-bold">руководитель тренеров</a> для кода идентификации класса, чтобы начать.
                             </p>
                         </div>
                     </div>

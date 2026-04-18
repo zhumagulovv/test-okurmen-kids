@@ -12,6 +12,8 @@ import { HiMiniTrophy } from 'react-icons/hi2'
 import { MdOutlineLeaderboard, MdOutlineFilterList } from 'react-icons/md'
 import { LuChevronLeft, LuChevronRight, LuMedal } from 'react-icons/lu'
 import { RiVipCrownLine } from 'react-icons/ri'
+import Dropdown from '../components/common/Dropdown'
+import { fetchSessions, selectActiveSessionId, selectSessionOptions } from '../features/sessionId/sessionIdSlice'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -61,10 +63,7 @@ const LiderBortPage = () => {
     const { global: globalBoard, session: sessionBoard, selectedSessionId, loading, error } =
         useSelector((s) => s.leaderboard)
     const sessionData = useSelector((s) => s.session?.data)
-
-    console.log(selectedSessionId)
-    console.log(globalBoard)
-    console.log(sessionBoard)
+    const sessionOptions = useSelector(selectSessionOptions)
 
     // ── Local state ──────────────────────────────────────────────────────────
     const [search, setSearch] = useState('')
@@ -86,6 +85,10 @@ const LiderBortPage = () => {
             dispatch(fetchLeaderboardById(sessionData.id))
         }
     }, [sessionData, selectedSessionId, dispatch])
+
+    useEffect(() => {
+        dispatch(fetchSessions())
+    }, [dispatch])
 
     // ── Handle session ID search ─────────────────────────────────────────────
     const handleSessionSearch = useCallback((e) => {
@@ -202,20 +205,32 @@ const LiderBortPage = () => {
                         onSubmit={handleSessionSearch}
                         className="flex-1 md:max-w-md flex gap-3 mt-6 md:mt-0 md:ml-auto"
                     >
-                        <div className="relative flex-1">
-                            <MdOutlineLeaderboard className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-xl" />
-                            <input
-                                value={sessionInput}
-                                onChange={(e) => setSessionInput(e.target.value)}
-                                placeholder="ID сессии (UUID)..."
-                                className="w-full bg-white/15 text-white placeholder:text-white/50 border border-white/20 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-white/40 text-sm"
+                        <div className="flex-1 md:max-w-md mt-6 md:mt-0 md:ml-auto">
+                            <Dropdown
+                                options={sessionOptions.map((s) => s.label)}
+                                value={sessionOptions.find((s) => s.value === selectedSessionId)?.label || ''}
+                                placeholder="Выберите сессию..."
+                                variant="hero"
+                                onChange={(label) => {
+                                    const session = sessionOptions.find((s) => s.label === label)
+                                    if (session) {
+                                        dispatch(setSelectedSessionId(session.value))
+                                        dispatch(fetchLeaderboardById(session.value))
+                                        setPage(1)
+                                    }
+                                }}
                             />
                         </div>
                         <button
-                            type="submit"
-                            className="px-5 py-3 bg-white text-(--primary) font-bold rounded-xl hover:bg-white/90 transition-all active:scale-95 text-sm whitespace-nowrap"
+                            onClick={() => {
+                                dispatch(setSelectedSessionId(''))
+                                setSessionInput('')
+                                dispatch(fetchLeaderboard())
+                                setPage(1)
+                            }}
+                            className="hover:underline px-5 py-3 bg-white text-(--primary) font-bold rounded-xl hover:bg-white/90 transition-all active:scale-95 text-sm whitespace-nowrap cursor-pointer"
                         >
-                            Найти
+                            Сбросить
                         </button>
                     </form>
                 </div>
@@ -301,7 +316,7 @@ const LiderBortPage = () => {
                 </div>
 
                 {/* ── Session label ────────────────────────────────────────── */}
-                {selectedSessionId && (
+                {/* {selectedSessionId && (
                     <div className="mb-4 flex items-center gap-3 text-sm text-(--on-surface-variant)">
                         <span className="bg-(--primary)/10 text-(--primary) px-3 py-1.5 rounded-lg font-bold">
                             Сессия: {selectedSessionId.slice(0, 8)}…
@@ -318,7 +333,7 @@ const LiderBortPage = () => {
                             × Сбросить фильтр
                         </button>
                     </div>
-                )}
+                )} */}
 
                 {/* ── Error ───────────────────────────────────────────────── */}
                 {error && (
@@ -353,7 +368,7 @@ const LiderBortPage = () => {
                         {[sorted[1], sorted[0], sorted[2]].map((row, podiumIdx) => {
                             if (!row) return null
                             const realRank = podiumIdx === 0 ? 2 : podiumIdx === 1 ? 1 : 3
-                            const heights = ['h-32', 'h-40', 'h-28']
+                            const heights = ['h-36', 'h-40', 'h-32']
                             const bgMap = [
                                 'bg-linear-to-b from-gray-100 to-gray-50 border-gray-200',
                                 'bg-linear-to-b from-amber-50 to-amber-100/60 border-amber-300',
@@ -419,13 +434,18 @@ const LiderBortPage = () => {
                                         <div className="col-span-1 flex justify-center">
                                             {medal ? (
                                                 <div
-                                                    className="w-8 h-8 rounded-full flex items-center justify-center text-white font-extrabold text-sm font-headline shadow"
-                                                    style={{ background: medal }}
+                                                    className="w-6 h-6 flex items-center justify-center font-extrabold text-sm font-headline tabular-nums sm:rounded-full sm:text-white sm:shadow"
+                                                    style={{
+                                                        background: window.innerWidth >= 640 ? medal : 'transparent',
+                                                        color: window.innerWidth < 640 ? medal : 'white'
+                                                    }}
                                                 >
                                                     {rank}
                                                 </div>
                                             ) : (
-                                                <span className="font-bold text-(--on-surface-variant) tabular-nums">{rank}</span>
+                                                <span className="font-bold text-(--on-surface-variant) tabular-nums">
+                                                    {rank}
+                                                </span>
                                             )}
                                         </div>
 

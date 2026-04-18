@@ -324,7 +324,7 @@ const TestPage = () => {
             </header> */}
 
             <header className="w-full sticky top-0 z-50 bg-(--surface-container-lowest) px-4 md:px-6 py-4">
-                <div className="max-w-382.5 md:max-w-[1530px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="max-w-382.5 md:max-w-382.5 mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
 
                     {/* LEFT: Progress text */}
                     <div className="flex flex-col items-center md:items-start text-center md:text-left">

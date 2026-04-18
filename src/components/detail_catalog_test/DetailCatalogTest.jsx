@@ -1,6 +1,32 @@
-import React from 'react';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAllTest } from '../../features/tests/testsSlice';
+
+const getLevelStyle = (level) => {
+    switch (level?.toLowerCase()) {
+        case 'easy':
+            return 'bg-emerald-100 text-emerald-700'
+        case 'medium':
+            return 'bg-amber-100 text-amber-700'
+        case 'hard':
+            return 'bg-red-100 text-red-700'
+        default:
+            return 'bg-(--surface-container-high) text-(--on-surface-variant)'
+    }
+}
 
 const DetailCatalogTest = () => {
+    const dispatch = useDispatch()
+    const { tests, loading, error } = useSelector((state) => state.tests)
+
+    useEffect(() => {
+        dispatch(fetchAllTest())
+    }, [dispatch])
+
+    if (loading) return <div>Loading...</div>
+
+    if (error) return <div>{error}</div>
+
     return (
         <section className="bg-(--surface) text-(--on-surface) min-h-screen pb-32">
             <div className="bg-[#efefff] dark:bg-slate-800 h-1 w-full"></div>
@@ -40,62 +66,52 @@ const DetailCatalogTest = () => {
                 {/* HEADER */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                     <div>
-                        <h3 className="text-2xl font-bold">Skill Challenges</h3>
+                        <h3 className="text-2xl font-bold">Задания на развитие навыков</h3>
                         <p className="text-(on-surface-variant)">
-                            Select a module to test your technical mastery
+                            Выберите модуль, чтобы проверить своё техническое мастерство
                         </p>
                     </div>
 
-                    <div className="flex gap-2">
-                        <span className="px-4 py-2 rounded-full bg-(--surface-container-high) text-sm font-semibold">
-                            All Levels
-                        </span>
-                        <span className="px-4 py-2 rounded-full bg-(--surface-container-lowest) text-(--primary) text-sm font-semibold shadow-sm">
-                            Popular
-                        </span>
+                    <div class="flex gap-2">
+                        <span
+                            class="px-4 py-2 rounded-full bg-(--surface-container-high) text-(--on-surface-variant) text-sm font-semibold">All
+                            Levels</span>
+                        <span
+                            class="px-4 py-2 rounded-full bg-surface-container-lowest text-primary text-sm font-semibold shadow-sm">Easy</span>
+                        <span
+                            class="px-4 py-2 rounded-full bg-surface-container-lowest text-primary text-sm font-semibold shadow-sm">Medium</span>
+                        <span
+                            class="px-4 py-2 rounded-full bg-surface-container-lowest text-primary text-sm font-semibold shadow-sm">Hard</span>
                     </div>
                 </div>
 
                 {/* CARDS GRID */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* CARD */}
+                    {
+                        tests.map((test) => (
+                            <div className="group bg-(--surface-container-lowest) rounded-xl p-6 transition-all hover:translate-y-1 relative">
+                                <span
+                                    className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold ${getLevelStyle(test.level)}`}
+                                >
+                                    {test.level}
+                                </span>
+                                <h4 className="text-xl font-bold mb-2">{test.title}</h4>
+                                <p className="text-sm mb-6 text-(--on-surface-variant)">
+                                    {test.description ? test.description : "More coding"}
+                                </p>
 
-                    {/* CARD 1 */}
-                    <div className="group bg-(--surface-container-lowest) rounded-xl p-6 transition-all hover:translate-y-1">
-                        <h4 className="text-xl font-bold mb-2">Python Foundations</h4>
-                        <p className="text-sm mb-6 text-(--on-surface-variant)">
-                            Variables, basic math, and your first "Hello World".
-                        </p>
+                                <div className="flex items-center gap-4 mb-8 text-xs font-bold text-(--on-surface-variant)/80">
+                                    <div>{test.question_count} Questions</div>
+                                    <div>15 Min</div>
+                                </div>
 
-                        <div className="flex items-center gap-4 mb-8 text-xs font-bold text-(--on-surface-variant)/80">
-                            <div>12 Questions</div>
-                            <div>15 Min</div>
-                        </div>
-
-                        <button className="w-full py-4 rounded-xl bg-linear-to-r from-(--primary) to-(--primary-dim) text-(--on-primary) font-bold">
-                            Start Practice
-                        </button>
-                    </div>
-
-                    {/* CARD 2 */}
-                    <div className="md:col-span-2 group bg-(--surface-container-high) rounded-xl p-6 flex flex-col md:flex-row gap-6">
-                        <div className="flex-1">
-                            <h4 className="text-2xl font-bold mb-2">Loops & Logic Gates</h4>
-                            <p className="text-sm mb-6 text-(--on-surface-variant)">
-                                IF, FOR loops and boolean logic.
-                            </p>
-
-                            <div className="flex gap-6 mb-8 text-xs font-bold">
-                                <div>20 Questions</div>
-                                <div>30 Min</div>
-                                <div className="text-(--primary)">+500 XP</div>
+                                <button className="w-full py-4 rounded-xl bg-linear-to-r from-(--primary) to-(--primary-dim) text-(--on-primary) font-bold">
+                                    Start Practice
+                                </button>
                             </div>
-
-                            <button className="px-8 py-4 rounded-xl bg-linear-to-r from-(--primary) to-(--primary-dim) text-(--on-primary) font-bold">
-                                Start Practice
-                            </button>
-                        </div>
-                    </div>
-
+                        ))
+                    }
                 </div>
             </main>
         </section>
