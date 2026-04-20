@@ -15,7 +15,7 @@ import {
 } from '../features/leaderboard/leaderboardSlice'
 
 import Dropdown from '../components/common/Dropdown'
-import { fetchSessions, selectActiveSessionId, selectSessionOptions } from '../features/sessionId/sessionIdSlice'
+import { fetchSessions, selectSessionOptions } from '../features/sessionId/sessionIdSlice'
 
 import { CATEGORIES, SORT_OPTIONS } from '../constants/constants'
 import { formatDuration, medalColor, scoreColor } from '../helpers/helpers'
@@ -27,7 +27,6 @@ const LiderBortPage = () => {
     const dispatch = useDispatch()
     const { global: globalBoard, session: sessionBoard, selectedSessionId, loading, error } =
         useSelector((s) => s.leaderboard)
-    const sessionData = useSelector((s) => s.session?.data)
     const sessionOptions = useSelector(selectSessionOptions)
 
     // ── Local state ──────────────────────────────────────────────────────────
@@ -35,47 +34,42 @@ const LiderBortPage = () => {
     const [category, setCategory] = useState('all')
     const [sortBy, setSortBy] = useState('rank')
     const [page, setPage] = useState(1)
-    const [sessionInput, setSessionInput] = useState('')
-    const [showFilter, setShowFilter] = useState(false)
 
-    // ── On mount: load global leaderboard ────────────────────────────────────
+    // ── On mount: load global leaderboard + session list ONLY ────────────────
+    // ✅ Never auto-selects a session — global is always the default view
     useEffect(() => {
         dispatch(fetchLeaderboard())
         dispatch(fetchSessions())
     }, [dispatch])
 
-    // ── If current session exists, pre-load session leaderboard ──────────────
-    useEffect(() => {
-        if (sessionData?.id && !selectedSessionId) {
-            dispatch(setSelectedSessionId(sessionData.id))
-            dispatch(fetchLeaderboardById(sessionData.id))
-        }
-    }, [sessionData, selectedSessionId, dispatch])
-
-    useEffect(() => {
-        if (sessionOptions.length && !selectedSessionId) {
-            const last = sessionOptions[sessionOptions.length - 1]
-            dispatch(setSelectedSessionId(last.value))
-            dispatch(fetchLeaderboardById(last.value))
-        }
-    }, [sessionOptions, selectedSessionId, dispatch])
-
-    // ── Handle session ID search ─────────────────────────────────────────────
-    const handleSessionSearch = useCallback((e) => {
-        e.preventDefault()
-        const trimmed = sessionInput.trim()
-        if (!trimmed) return
-        dispatch(setSelectedSessionId(trimmed))
-        dispatch(fetchLeaderboardById(trimmed))
+    // ── Handle session selection from dropdown ───────────────────────────────
+    const handleSessionSelect = useCallback((id) => {
+        dispatch(setSelectedSessionId(id))
+        dispatch(fetchLeaderboardById(id))
         setPage(1)
-    }, [dispatch, sessionInput])
+    }, [dispatch])
 
-    // ── Raw rows: prefer session board, fall back to global ──────────────────
+    // ── Handle reset: clear session → back to global ─────────────────────────
+    const handleReset = useCallback(() => {
+        dispatch(setSelectedSessionId(''))
+        dispatch(fetchLeaderboard())
+        setPage(1)
+    }, [dispatch])
+
+    // ── Handle manual refresh ────────────────────────────────────────────────
+    const handleRefresh = useCallback(() => {
+        if (selectedSessionId) {
+            dispatch(fetchLeaderboardById(selectedSessionId))
+        } else {
+            dispatch(fetchLeaderboard())
+        }
+    }, [dispatch, selectedSessionId])
+
+    // ── Raw rows: session board when a session is selected, global otherwise ──
+    // ✅ This is the single source of truth for which board to display
     const rawRows = useMemo(() => {
         const board = selectedSessionId ? sessionBoard : globalBoard
-        if (!board) return []
-        // Both endpoints return { results: [...] }
-        return board.results ?? []
+        return board?.results ?? []
     }, [selectedSessionId, sessionBoard, globalBoard])
 
     // ── Apply category filter ────────────────────────────────────────────────
@@ -92,23 +86,17 @@ const LiderBortPage = () => {
     const searched = useMemo(() => {
         if (!search.trim()) return categoryFiltered
         const q = search.toLowerCase()
-        return categoryFiltered.filter((r) =>
-            r.student_name?.toLowerCase().includes(q)
-        )
+        return categoryFiltered.filter((r) => r.student_name?.toLowerCase().includes(q))
     }, [categoryFiltered, search])
 
     // ── Apply sort ───────────────────────────────────────────────────────────
     const sorted = useMemo(() => {
         const arr = [...searched]
         switch (sortBy) {
-            case 'score':
-                return arr.sort((a, b) => b.score - a.score)
-            case 'duration':
-                return arr.sort((a, b) => (a.duration_seconds ?? Infinity) - (b.duration_seconds ?? Infinity))
-            case 'name':
-                return arr.sort((a, b) => a.student_name?.localeCompare(b.student_name ?? ''))
-            default:
-                return arr.sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+            case 'score': return arr.sort((a, b) => b.score - a.score)
+            case 'duration': return arr.sort((a, b) => (a.duration_seconds ?? Infinity) - (b.duration_seconds ?? Infinity))
+            case 'name': return arr.sort((a, b) => a.student_name?.localeCompare(b.student_name ?? ''))
+            default: return arr.sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
         }
     }, [searched, sortBy])
 
@@ -116,15 +104,8 @@ const LiderBortPage = () => {
     const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
     const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
-    const handleCategoryChange = (id) => {
-        setCategory(id)
-        setPage(1)
-    }
-
-    const handleSortChange = (val) => {
-        setSortBy(val)
-        setPage(1)
-    }
+    const handleCategoryChange = (id) => { setCategory(id); setPage(1) }
+    const handleSortChange = (val) => { setSortBy(val); setPage(1) }
 
     // ── Stats ────────────────────────────────────────────────────────────────
     const stats = useMemo(() => {
@@ -136,22 +117,12 @@ const LiderBortPage = () => {
         return { avg: avg.toFixed(1), passed, total: rawRows.length, top }
     }, [rawRows])
 
-    // ── Refresh ──────────────────────────────────────────────────────────────
-    const handleRefresh = () => {
-        if (selectedSessionId) {
-            dispatch(fetchLeaderboardById(selectedSessionId))
-        } else {
-            dispatch(fetchLeaderboard())
-        }
-    }
-
     // ── Render ───────────────────────────────────────────────────────────────
     return (
         <section className="bg-(--background) text-(--on-surface) min-h-screen pb-24 font-body">
 
             {/* ── HERO BANNER ─────────────────────────────────────────────── */}
             <div className="relative overflow-hidden bg-linear-to-br from-(--primary) to-(--secondary) px-6 py-14 md:py-20">
-                {/* decorative circles */}
                 <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/5 pointer-events-none" />
                 <div className="absolute bottom-0 left-1/3 w-96 h-40 rounded-full bg-white/5 pointer-events-none blur-2xl" />
 
@@ -170,67 +141,48 @@ const LiderBortPage = () => {
                         </div>
                     </div>
 
-                    {/* ── Session ID input ───────────────────────────────── */}
-                    <form
-                        onSubmit={handleSessionSearch}
-                        className="flex-1 md:max-w-md flex gap-3 mt-6 md:mt-0 md:ml-auto"
-                    >
-                        <div className="flex-1 md:max-w-md mt-6 md:mt-0 md:ml-auto">
+                    {/* ── Session dropdown + Reset ───────────────────────── */}
+                    {/* ✅ Extracted into named handlers — no inline dispatch logic */}
+                    <div className="flex-1 md:max-w-md flex gap-3 mt-6 md:mt-0 md:ml-auto">
+                        <div className="flex-1">
                             <Dropdown
                                 options={sessionOptions}
                                 value={selectedSessionId}
                                 placeholder="Выберите сессию..."
                                 variant="hero"
-                                onChange={(id) => {
-                                    dispatch(setSelectedSessionId(id))
-                                    dispatch(fetchLeaderboardById(id))
-                                    setPage(1)
-                                }}
+                                onChange={handleSessionSelect}
                             />
                         </div>
                         <button
-                            onClick={() => {
-                                dispatch(setSelectedSessionId(''))
-                                setSessionInput('')
-                                dispatch(fetchLeaderboard())
-                                setPage(1)
-                            }}
+                            onClick={handleReset}
                             className="hover:underline px-5 py-3 bg-white text-(--primary) font-bold rounded-xl hover:bg-white/90 transition-all active:scale-95 text-sm whitespace-nowrap cursor-pointer"
                         >
                             Сбросить
                         </button>
-                    </form>
+                    </div>
                 </div>
 
                 {/* ── Stats strip ───────────────────────────────────────── */}
-                {
-                    loading ? (
-                        <StatsSkeleton />
-                    ) : stats && (
-                        <div className="max-w-7xl mx-auto mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {[
-                                { icon: FiUsers, label: 'Участников', value: stats.total ?? 0 },
-                                { icon: FiAward, label: 'Средний балл', value: stats.avg ? `${stats.avg}%` : 'Нет данных' },
-                                { icon: FiZap, label: 'Прошли (≥75%)', value: stats.passed ?? 0 },
-                                {
-                                    icon: RiVipCrownLine,
-                                    label: 'Лидер',
-                                    value: stats.top?.student_name
-                                        ? stats.top.student_name.split(' ')[0]
-                                        : 'Нет данных'
-                                },
-                            ].map(({ icon: Icon, label, value }) => (
-                                <div key={label} className="bg-white/10 rounded-xl px-5 py-4 flex items-center gap-4 backdrop-blur-sm">
-                                    <Icon className="text-white/70 text-2xl shrink-0" />
-                                    <div>
-                                        <div className="text-white font-headline font-bold text-xl">{value}</div>
-                                        <div className="text-white/60 text-xs">{label}</div>
-                                    </div>
+                {loading ? (
+                    <StatsSkeleton />
+                ) : stats && (
+                    <div className="max-w-7xl mx-auto mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[
+                            { icon: FiUsers, label: 'Участников', value: stats.total ?? 0 },
+                            { icon: FiAward, label: 'Средний балл', value: stats.avg ? `${stats.avg}%` : 'Нет данных' },
+                            { icon: FiZap, label: 'Прошли (≥75%)', value: stats.passed ?? 0 },
+                            { icon: RiVipCrownLine, label: 'Лидер', value: stats.top?.student_name?.split(' ')[0] ?? 'Нет данных' },
+                        ].map(({ icon: Icon, label, value }) => (
+                            <div key={label} className="bg-white/10 rounded-xl px-5 py-4 flex items-center gap-4 backdrop-blur-sm">
+                                <Icon className="text-white/70 text-2xl shrink-0" />
+                                <div>
+                                    <div className="text-white font-headline font-bold text-xl">{value}</div>
+                                    <div className="text-white/60 text-xs">{label}</div>
                                 </div>
-                            ))}
-                        </div>
-                    )
-                }
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* ── CONTENT ─────────────────────────────────────────────────── */}
@@ -254,9 +206,8 @@ const LiderBortPage = () => {
                     ))}
                 </div>
 
-                {/* ── Toolbar: search + sort + refresh ────────────────────── */}
+                {/* ── Toolbar ─────────────────────────────────────────────── */}
                 <div className="bg-(--surface-container-lowest) rounded-2xl p-4 mb-6 flex flex-col md:flex-row gap-3 items-center border border-(--outline-variant)/10">
-                    {/* search */}
                     <div className="relative flex-1 w-full">
                         <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-(--on-surface-variant) text-lg" />
                         <input
@@ -267,7 +218,6 @@ const LiderBortPage = () => {
                         />
                     </div>
 
-                    {/* sort */}
                     <div className="flex items-center gap-2">
                         <MdOutlineFilterList className="text-(--on-surface-variant) text-xl shrink-0" />
                         <select
@@ -281,7 +231,6 @@ const LiderBortPage = () => {
                         </select>
                     </div>
 
-                    {/* refresh */}
                     <button
                         onClick={handleRefresh}
                         disabled={loading}
@@ -319,7 +268,7 @@ const LiderBortPage = () => {
                     </div>
                 )}
 
-                {/* ── TOP-3 podium (only when no search / all category) ───── */}
+                {/* ── TOP-3 podium ─────────────────────────────────────────── */}
                 {!loading && !search && category === 'all' && sorted.length >= 3 && (
                     <div className="grid grid-cols-3 gap-4 mb-8">
                         {[sorted[1], sorted[0], sorted[2]].map((row, podiumIdx) => {
@@ -366,7 +315,6 @@ const LiderBortPage = () => {
                 {/* ── Table ───────────────────────────────────────────────── */}
                 {!loading && sorted.length > 0 && (
                     <div className="bg-(--surface-container-lowest) rounded-2xl overflow-hidden border border-(--outline-variant)/10 shadow-sm">
-                        {/* header */}
                         <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-(--surface-container-low) text-xs font-bold uppercase tracking-wider text-(--on-surface-variant)">
                             <div className="col-span-1 text-center">#</div>
                             <div className="col-span-5">Студент</div>
@@ -374,7 +322,6 @@ const LiderBortPage = () => {
                             <div className="col-span-3 text-center">Время</div>
                         </div>
 
-                        {/* rows */}
                         <div className="divide-y divide-(--outline-variant)/10">
                             {paginated.map((row, i) => {
                                 const globalIndex = (page - 1) * PAGE_SIZE + i
@@ -387,7 +334,6 @@ const LiderBortPage = () => {
                                         className={`grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-(--surface-container-low) transition-colors
                                             ${rank <= 3 ? 'bg-amber-50/30' : ''}`}
                                     >
-                                        {/* rank */}
                                         <div className="col-span-1 flex justify-center">
                                             {medal ? (
                                                 <div
@@ -406,7 +352,6 @@ const LiderBortPage = () => {
                                             )}
                                         </div>
 
-                                        {/* name */}
                                         <div className="col-span-5 flex items-center gap-3">
                                             <div
                                                 className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-extrabold font-headline text-sm shrink-0"
@@ -419,7 +364,6 @@ const LiderBortPage = () => {
                                             </span>
                                         </div>
 
-                                        {/* score */}
                                         <div className="col-span-3 flex justify-center">
                                             <div className="text-center">
                                                 <div
@@ -428,7 +372,6 @@ const LiderBortPage = () => {
                                                 >
                                                     {Math.round(row.score ?? 0)}%
                                                 </div>
-                                                {/* mini progress bar */}
                                                 <div className="w-20 h-1.5 bg-(--surface-container-high) rounded-full mt-1 mx-auto overflow-hidden">
                                                     <div
                                                         className="h-full rounded-full transition-all"
@@ -441,7 +384,6 @@ const LiderBortPage = () => {
                                             </div>
                                         </div>
 
-                                        {/* duration */}
                                         <div className="col-span-3 text-center text-(--on-surface-variant) font-medium text-sm flex items-center justify-center gap-1">
                                             <FiClock className="text-xs shrink-0" />
                                             {formatDuration(row.duration_seconds)}
@@ -467,9 +409,7 @@ const LiderBortPage = () => {
                         {Array.from({ length: totalPages }, (_, i) => i + 1)
                             .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
                             .reduce((acc, p, idx, arr) => {
-                                if (idx > 0 && arr[idx - 1] !== p - 1) {
-                                    acc.push('…')
-                                }
+                                if (idx > 0 && arr[idx - 1] !== p - 1) acc.push('…')
                                 acc.push(p)
                                 return acc
                             }, [])
@@ -501,7 +441,6 @@ const LiderBortPage = () => {
                     </div>
                 )}
 
-                {/* ── Footer note ──────────────────────────────────────────── */}
                 <p className="text-center text-(--on-surface-variant)/50 text-xs mt-10">
                     Показано {paginated.length} из {sorted.length} результатов
                     {selectedSessionId ? ' в выбранной сессии' : ' (глобальный рейтинг)'}

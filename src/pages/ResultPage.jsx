@@ -6,6 +6,7 @@ import { BsFillCheckCircleFill } from 'react-icons/bs'
 import { MdOutlineErrorOutline, MdOutlineQuiz } from 'react-icons/md'
 
 import { clearAttempt } from '../features/attempt/attemptSlice'
+import { Loading } from '../components/common/loading'
 
 const ResultPage = () => {
     const dispatch = useDispatch()
@@ -26,9 +27,7 @@ const ResultPage = () => {
 
     if (loading || !result) {
         return (
-            <main className="min-h-screen flex items-center justify-center text-(--on-surface-variant)">
-                Загрузка результатов...
-            </main>
+            <Loading />
         )
     }
 

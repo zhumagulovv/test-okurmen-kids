@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 let MENU_HEADER = [
     { id: 1, label: 'Главная', path: '/' },
-    { id: 2, label: 'Результаты', path: '/table' },
-    { id: 3, label: 'Таблица лидеров', path: '/leaderboard' },
+    { id: 2, label: 'Таблица лидеров', path: '/leaderboard' },
 ];
 
 const Header = () => {

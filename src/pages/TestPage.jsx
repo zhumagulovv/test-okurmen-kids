@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux';
-import { useBlocker, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux'
+import { useBlocker, useNavigate } from 'react-router-dom'
 
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { MdOutlineTaskAlt } from 'react-icons/md';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import { MdOutlineTaskAlt } from 'react-icons/md'
 
-import SingleChoice from '../components/common/SingleChoice';
-import CodeAnswer from '../components/common/CodeAnswer';
-import TextAnswer from '../components/common/TextAnswer';
-import MultiChoice from '../components/common/MultiChoice';
+import SingleChoice from '../components/common/SingleChoice'
+import CodeAnswer from '../components/common/CodeAnswer'
+import TextAnswer from '../components/common/TextAnswer'
+import MultiChoice from '../components/common/MultiChoice'
 
 import {
     incrementTimer,
@@ -17,278 +17,307 @@ import {
     setCurrentIndex,
     setQuizAnswer,
     startTimer,
-} from '../features/quiz/quizSlice';
+} from '../features/quiz/quizSlice'
 
-import { fetchResult, finishAttempt, submitAnswer } from '../features/attempt/attemptSlice';
+import { fetchResult, finishAttempt, submitAnswer } from '../features/attempt/attemptSlice'
 
-import { BLOCKED_COMBINATIONS } from '../constants/constants';
-import { useMatchHotkey } from '../hooks/useMatchHotkey';
-import { normalizeLanguage } from '../helpers/normalizeLanguage';
-
+import { BLOCKED_COMBINATIONS } from '../constants/constants'
+import { useMatchHotkey } from '../hooks/useMatchHotkey'
+import { normalizeLanguage } from '../helpers/normalizeLanguage'
+import { formatTime } from '../helpers/formatTime'
 import logoImage from '../assets/logo.png'
-import { formatTime } from '../helpers/formatTime';
 
-// ---------------------------------------------------------------------------
-// Constants & helpers
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────────────────────────────────────
+
+const EXAM_DURATION_SECONDS = 40 * 60   // 2400 s — strict limit
+const URGENT_THRESHOLD = 5 * 60   // last 5 min → timer turns red
 
 const QUESTION_COMPONENTS = {
     single_choice: SingleChoice,
     multiple_choice: MultiChoice,
     code: CodeAnswer,
     text: TextAnswer,
-};
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pure helper — no component deps, safe to call from anywhere
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Build the answer payload for a single question.
- * Returns null for empty / unanswered questions so callers can filter them out.
+ * Build the submit payload for one question.
+ * Returns null when the question is unanswered so callers can filter it out.
  */
-const buildAnswerPayload = (q, answers, attemptId, index) => {
-    const answer = answers[index];
+const buildAnswerPayload = (question, answers, attemptId, index) => {
+    const answer = answers[index]
     const isEmpty =
         answer === undefined ||
         answer === null ||
         answer === '' ||
-        (Array.isArray(answer) && answer.length === 0);
+        (Array.isArray(answer) && answer.length === 0)
 
-    if (isEmpty) return null;
+    if (isEmpty) return null
 
-    const base = { attempt_id: attemptId, question_id: q.id };
+    const base = { attempt_id: attemptId, question_id: question.id }
 
-    switch (q.question_type) {
-        case 'single_choice':
-            const optionId = q.options[answer]?.id
-            return { ...base, selected_options: [optionId] };
+    switch (question.question_type) {
+        case 'single_choice': {
+            const optionId = question.options[answer]?.id
+            return { ...base, selected_options: [optionId] }
+        }
         case 'multiple_choice':
-            return { ...base, selected_options: Array.isArray(answer) ? answer : [answer] };
+            return { ...base, selected_options: Array.isArray(answer) ? answer : [answer] }
         case 'text':
-            return { ...base, answer_text: answer };
+            return { ...base, answer_text: answer }
         case 'code':
             return {
                 ...base,
                 answer_text: typeof answer === 'object' ? JSON.stringify(answer) : answer,
-            };
+            }
         default:
-            return null;
+            return null
     }
-};
+}
 
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // Component
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
 const TestPage = () => {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
 
-    const { currentIndex, elapsed, answers } = useSelector((s) => s.quiz);
-    const { questions, current } = useSelector((s) => s.attempt);
+    const { currentIndex, elapsed, answers } = useSelector((s) => s.quiz)
+    const { questions, current } = useSelector((s) => s.attempt)
 
-    // const [answers, setAnswers] = useState({});
-    const [isExamActive, setIsExamActive] = useState(true);
+    // Controls whether the router blocker is active.
+    // Set to false just before navigating so the blocker doesn't re-intercept
+    // our own programmatic navigation to /result-page.
+    const [isExamActive, setIsExamActive] = useState(true)
 
-    // ── Anti-cheat: single-execution lock ──────────────────────────────────
-    // We keep a ref so the lock value is always current inside async closures
-    // without being a stale closure over state.
-    const isFinishingRef = useRef(false);
+    // ── Refs: always-current snapshots safe inside stale async closures ──────
+    // A ref never causes a re-render and is always in sync — perfect for values
+    // read inside event listeners, timeouts, and async continuations.
+    const isFinishingRef = useRef(false)   // ← the single-execution lock
+    const answersRef = useRef(answers)
+    const questionsRef = useRef(questions)
+    const currentRef = useRef(current)
+    const isExamActiveRef = useRef(true)
 
-    // Keep a ref mirror of the answers so async closures (visibility change,
-    // blocker) always read the latest answers without depending on stale state.
-    const answersRef = useRef(answers);
-    useEffect(() => { answersRef.current = answers; }, [answers]);
+    useEffect(() => { answersRef.current = answers }, [answers])
+    useEffect(() => { questionsRef.current = questions }, [questions])
+    useEffect(() => { currentRef.current = current }, [current])
+    useEffect(() => { isExamActiveRef.current = isExamActive }, [isExamActive])
 
-    // Same for questions & current so we never capture stale slice state.
-    const questionsRef = useRef(questions);
-    useEffect(() => { questionsRef.current = questions; }, [questions]);
+    // ── Derived ──────────────────────────────────────────────────────────────
+    const total = questions.length
+    const isLastQuestion = total > 0 && currentIndex === total - 1  // ① gate for submit button
+    const progress = total ? Math.round(((currentIndex + 1) / total) * 100) : 0
+    const question = questions[currentIndex]
+    const normalizedLanguage = normalizeLanguage(question?.language)
+    const timerIsUrgent = elapsed >= EXAM_DURATION_SECONDS - URGENT_THRESHOLD
 
-    const currentRef = useRef(current);
-    useEffect(() => { currentRef.current = current; }, [current]);
-
-    // ── Derived ─────────────────────────────────────────────────────────────
-    const total = questions.length;
-    const progress = total ? Math.round(((currentIndex + 1) / total) * 100) : 0;
-    const question = questions[currentIndex];
-    const normalizedLanguage = normalizeLanguage(question?.language);
-
-    // ── Core finish flow ────────────────────────────────────────────────────
-
-    /**
-     * The single source of truth for ending an attempt.
-     *
-     * Returns the attemptId on success, throws on failure.
-     * Relies on refs so it is safe to call from any async context.
-     */
-    const finishAttemptFlow = useCallback(async () => {
-        // ── LOCK ──────────────────────────────────────────────────────────
-        if (isFinishingRef.current) return null; // already running – bail out
-        isFinishingRef.current = true;
+    // ─────────────────────────────────────────────────────────────────────────
+    // ③ Core finish flow — THE single source of truth for ending an attempt
+    // ─────────────────────────────────────────────────────────────────────────
+    //
+    // Design decisions:
+    //   • Reads everything from refs so it's race-condition-safe in any async
+    //     context (visibility handler, blocker effect, timer effect).
+    //   • The isFinishingRef lock ensures it executes at most once, no matter
+    //     how many triggers fire simultaneously (tab switch + timer + blocker).
+    //   • On failure the lock is released so the user can retry manually.
+    //   • On success the lock stays true — all subsequent triggers are no-ops.
+    //   • Does NOT navigate — callers own the navigation decision.
+    //
+    const finishExamFlow = useCallback(async () => {
+        // ── LOCK ─────────────────────────────────────────────────────────────
+        if (isFinishingRef.current) return null   // already running or done → bail
+        isFinishingRef.current = true
 
         try {
-            const snapshotAnswers = answersRef.current;
-            const snapshotQuestions = questionsRef.current;
-            const snapshotCurrent = currentRef.current;
+            const snapshotAnswers = answersRef.current
+            const snapshotQuestions = questionsRef.current
+            const snapshotCurrent = currentRef.current
 
-            const attemptId = snapshotCurrent?.id ?? snapshotCurrent?.attempt_id;
-            if (!attemptId) throw new Error('NO_ATTEMPT_ID');
+            const attemptId = snapshotCurrent?.id ?? snapshotCurrent?.attempt_id
+            if (!attemptId) throw new Error('NO_ATTEMPT_ID')
 
-            // ── Submit all non-empty answers in parallel ───────────────────
+            // ── ① Submit all non-empty answers in parallel ────────────────
             const payloads = snapshotQuestions
-                .map((q, index) => buildAnswerPayload(q, snapshotAnswers, attemptId, index))
-                .filter(Boolean);
+                .map((q, i) => buildAnswerPayload(q, snapshotAnswers, attemptId, i))
+                .filter(Boolean)
 
             await Promise.all(
                 payloads.map((payload) => dispatch(submitAnswer(payload)).unwrap())
-            );
+            )
 
-            // ── Finish & fetch result ─────────────────────────────────────
-            await dispatch(finishAttempt(attemptId)).unwrap();
-            await dispatch(fetchResult(attemptId)).unwrap();
+            // ── ② Finish the attempt ──────────────────────────────────────
+            await dispatch(finishAttempt(attemptId)).unwrap()
 
-            // ── Mark exam as done so the router blocker stops firing ───────
-            setIsExamActive(false);
+            // ── ③ Pre-fetch result so /result-page renders immediately ────
+            await dispatch(fetchResult(attemptId)).unwrap()
 
-            return attemptId;
+            // Deactivate blocker BEFORE navigating so our own navigation
+            // doesn't get intercepted by the useBlocker below.
+            setIsExamActive(false)
+
+            return attemptId
+
         } catch (err) {
-            // Release the lock on failure so the user can retry manually
-            isFinishingRef.current = false;
-            throw err;
+            // Release the lock so the user can retry on manual submit
+            isFinishingRef.current = false
+            throw err
         }
-        // Note: we intentionally DO NOT release the lock after success so
-        // subsequent triggers (visibility, blocker, etc.) are all no-ops.
-    }, [dispatch]); // stable – everything else comes from refs
+        // On success: lock stays true. Every subsequent trigger is a no-op.
+    }, [dispatch])   // stable — all live data comes from refs
 
-    // ── Public handlers ─────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // Public handlers — thin wrappers that own navigation / error reporting
+    // ─────────────────────────────────────────────────────────────────────────
 
-    /** Called by the manual "Submit" button. Navigates after finishing. */
+    /** ① Manual submit button on the last question */
     const handleFinish = useCallback(async () => {
         try {
-            await finishAttemptFlow();
-            navigate('/result-page');
-        } catch (error) {
-            alert(error?.message || 'Ошибка завершения теста');
-            console.error('Finish error:', error);
+            await finishExamFlow()
+            navigate('/result-page')
+        } catch (err) {
+            alert(err?.message || 'Ошибка завершения теста')
+            console.error('[handleFinish]', err)
         }
-    }, [finishAttemptFlow, navigate]);
+    }, [finishExamFlow, navigate])
 
     /**
-     * Called by automatic triggers (tab switch, beforeunload, blocker).
-     * Does NOT navigate – the caller decides what to do next.
+     * Automatic triggers (tab switch, beforeunload, timer, blocker).
+     * Swallows errors — the specific trigger decides what to do next.
      */
     const handleAutoFinish = useCallback(async () => {
         try {
-            await finishAttemptFlow();
-            // Navigation is handled by the specific trigger (blocker.proceed, etc.)
-        } catch (e) {
-            console.error('Auto-finish error:', e);
+            await finishExamFlow()
+        } catch (err) {
+            console.error('[handleAutoFinish]', err)
         }
-    }, [finishAttemptFlow]);
+    }, [finishExamFlow])
 
-    // ── React Router blocker ────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // ② Timer auto-finish — fires exactly once at the 2400-second mark
+    // ─────────────────────────────────────────────────────────────────────────
+    //
+    // This effect re-runs every second (elapsed changes via incrementTimer).
+    // The early returns make it a near-zero-cost no-op on the first 2399 ticks.
+    // At tick 2400 it finishes the exam and navigates.
+    //
+    useEffect(() => {
+        if (elapsed < EXAM_DURATION_SECONDS) return   // not yet
+        if (!isExamActiveRef.current) return          // already finished
 
+        // Time's up — finish silently and redirect
+        handleAutoFinish().then(() => navigate('/result-page'))
+    }, [elapsed, handleAutoFinish, navigate])
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // React Router blocker — intercepts programmatic + user navigation
+    // ─────────────────────────────────────────────────────────────────────────
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
             isExamActive && currentLocation.pathname !== nextLocation.pathname
-    );
+    )
 
     useEffect(() => {
-        if (blocker.state !== 'blocked') return;
+        if (blocker.state !== 'blocked') return
 
         handleAutoFinish()
             .then(() => blocker.proceed())
-            .catch(() => blocker.reset());
-    }, [blocker, handleAutoFinish]);
+            .catch(() => blocker.reset())
+    }, [blocker, handleAutoFinish])
 
-    // ── Global event listeners ───────────────────────────────────────────────
-
+    // ─────────────────────────────────────────────────────────────────────────
+    // Global event listeners — mounted once, cleaned up on unmount
+    // ─────────────────────────────────────────────────────────────────────────
     useEffect(() => {
-        // Timer
-        dispatch(startTimer());
-        const timerInterval = setInterval(() => dispatch(incrementTimer()), 1000);
+        dispatch(startTimer())
+        const timerInterval = setInterval(() => dispatch(incrementTimer()), 1000)
 
-        // ── A) Tab visibility (anti-cheat: auto-finish on hide) ───────────
+        // A) Tab hidden → auto-finish + redirect
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'hidden') {
-                handleAutoFinish().then(() => navigate('/result-page'));
+                handleAutoFinish().then(() => navigate('/result-page'))
             }
-        };
-        document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
+        document.addEventListener('visibilitychange', handleVisibilityChange)
 
-        // ── B) Page leave / refresh ────────────────────────────────────────
-        // beforeunload cannot run async code; we start the flow but the
-        // browser may kill it before it completes. A synchronous beacon is
-        // the only truly reliable option here but requires a dedicated endpoint;
-        // we trigger the async flow as a best-effort and show the native dialog.
+        // B) Page unload — best-effort async + native dialog
+        //    The browser may kill the async flow before it completes;
+        //    this is a known limitation without a dedicated beacon endpoint.
         const handleBeforeUnload = (e) => {
-            e.preventDefault();
-            e.returnValue = ''; // triggers native browser dialog
+            e.preventDefault()
+            e.returnValue = ''   // triggers native "Leave site?" dialog
+            handleAutoFinish().catch(() => { })
+        }
+        window.addEventListener('beforeunload', handleBeforeUnload)
 
-            // Best-effort fire-and-forget (browser may cancel midway)
-            handleAutoFinish().catch(() => { });
-        };
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-        // ── C) Hotkey block (Ctrl+R, F5, etc.) ────────────────────────────
+        // C) Block Ctrl+R, F5, etc.
         const preventRefresh = (e) => {
             if (BLOCKED_COMBINATIONS.some((combo) => useMatchHotkey(e, combo))) {
-                e.preventDefault();
+                e.preventDefault()
             }
-        };
-        window.addEventListener('keydown', preventRefresh);
+        }
+        window.addEventListener('keydown', preventRefresh)
 
-        // ── D) Clipboard lock ─────────────────────────────────────────────
-        const noop = (e) => e.preventDefault();
-        document.addEventListener('copy', noop);
-        document.addEventListener('paste', noop);
-        document.addEventListener('cut', noop);
+        // D) Clipboard lock
+        const noop = (e) => e.preventDefault()
+        document.addEventListener('copy', noop)
+        document.addEventListener('paste', noop)
+        document.addEventListener('cut', noop)
 
         return () => {
-            clearInterval(timerInterval);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-            window.removeEventListener('keydown', preventRefresh);
-            document.removeEventListener('copy', noop);
-            document.removeEventListener('paste', noop);
-            document.removeEventListener('cut', noop);
-        };
-        // handleAutoFinish & navigate are stable callbacks (useCallback + stable deps)
-    }, [dispatch, handleAutoFinish, navigate]);
+            clearInterval(timerInterval)
+            document.removeEventListener('visibilitychange', handleVisibilityChange)
+            window.removeEventListener('beforeunload', handleBeforeUnload)
+            window.removeEventListener('keydown', preventRefresh)
+            document.removeEventListener('copy', noop)
+            document.removeEventListener('paste', noop)
+            document.removeEventListener('cut', noop)
+        }
+    }, [dispatch, handleAutoFinish, navigate])
+    // handleAutoFinish and navigate are stable (useCallback + stable deps),
+    // so this effect correctly runs only once on mount.
 
-    // ── Per-question autosave ────────────────────────────────────────────────
-
-    // const handleAnswerChange = useCallback((questionId, value) => {
-    //     setAnswers((prev) => ({ ...prev, [questionId]: value }));
-    // }, []);
-
-    // ── Render ───────────────────────────────────────────────────────────────
-
+    // ─────────────────────────────────────────────────────────────────────────
+    // Question component resolution
+    // ─────────────────────────────────────────────────────────────────────────
     const QuestionComponent =
         question?.question_type && QUESTION_COMPONENTS[question.question_type]
             ? QUESTION_COMPONENTS[question.question_type]
-            : TextAnswer;
+            : TextAnswer
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Render
+    // ─────────────────────────────────────────────────────────────────────────
     return (
         <section className="bg-(--surface-container-lowest) text-(--on-surface) min-h-screen flex flex-col">
-            <header className="w-full sticky top-0 z-50 bg-(--surface-container-lowest) px-4 md:px-6 py-4">
-                <div className="max-w-382.5 md:max-w-382.5 mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
 
-                    {/* LEFT: Progress text */}
+            {/* ── Header ─────────────────────────────────────────────────── */}
+            <header className="w-full relative top-0 z-50 bg-(--surface-container-lowest) px-4 md:px-6 py-4">
+                <div className="max-w-382.5 mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+
+                    {/* Progress label */}
                     <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <span className="text-(--on-surface-variant) font-label text-xs uppercase tracking-widest mb-1">
                             Текущий прогресс
                         </span>
-
                         <div className="flex items-center gap-3">
                             <span className="font-headline font-bold text-lg text-(--primary)">
                                 Вопрос {currentIndex + 1} из {total}
                             </span>
-
                             <span className="text-(--on-surface-variant) font-medium text-sm bg-(--surface-container-low) px-2 py-1 rounded-lg">
                                 {progress}% завершено
                             </span>
                         </div>
                     </div>
 
-                    {/* CENTER: Progress bar */}
+                    {/* Progress bar */}
                     <div className="w-full md:flex-1 md:px-6 order-3 md:order-0">
                         <div className="h-2 w-full bg-(--surface-container-high) rounded-full overflow-hidden">
                             <div
@@ -298,35 +327,35 @@ const TestPage = () => {
                         </div>
                     </div>
 
-                    {/* RIGHT: Timer + Button */}
+                    {/* Timer + conditional submit button */}
                     <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
 
-                        {/* Timer */}
-                        <div className="flex items-center gap-2 bg-(--tertiary-container)/10 border border-(--tertiary-container)/20 px-4 py-2 rounded-xl">
-                            <span className="material-symbols-outlined text-(--tertiary-dim)">
+                        {/*
+                         * Timer — turns red + pulses in the final 5 minutes
+                         * so students get a visual warning before hard cutoff.
+                         */}
+                        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-colors duration-500
+                            ${timerIsUrgent
+                                ? 'bg-(--error)/10 border-(--error)/30 animate-pulse'
+                                : 'bg-(--tertiary-container)/10 border-(--tertiary-container)/20'
+                            }`}
+                        >
+                            <span className={`material-symbols-outlined ${timerIsUrgent ? 'text-(--error)' : 'text-(--tertiary-dim)'}`}>
                                 timer
                             </span>
-                            <span className="font-headline font-extrabold text-xl text-(--tertiary-dim) tabular-nums">
+                            <span className={`font-headline font-extrabold text-xl tabular-nums
+                                ${timerIsUrgent ? 'text-(--error)' : 'text-(--tertiary-dim)'}`}
+                            >
                                 {formatTime(elapsed)}
                             </span>
                         </div>
-
-                        {/* Button */}
-                        <button
-                            onClick={handleFinish}
-                            className="w-full md:w-auto px-8 py-3 rounded-xl bg-linear-to-r from-(--primary) to-(--primary-container) text-white font-headline font-extrabold text-lg shadow-xl shadow-(--primary)/20 hover:shadow-2xl hover:shadow-(--primary)/30 transition-all active:scale-95 flex items-center justify-center gap-3"
-                        >
-                            Отправить
-                            <MdOutlineTaskAlt />
-                        </button>
-
                     </div>
-
                 </div>
             </header>
 
-            {/* ── Main ── */}
+            {/* ── Main ────────────────────────────────────────────────────── */}
             <main className="flex-1 flex flex-col md:flex-row p-4 md:p-8 gap-8 max-w-400 mx-auto w-full">
+
                 {/* ── Sidebar ── */}
                 <aside className="w-full md:w-80 flex flex-col gap-8">
                     <div className="bg-(--surface-container-low) p-6 rounded-(--xl)">
@@ -352,26 +381,27 @@ const TestPage = () => {
 
                         <div className="grid grid-cols-5 gap-3">
                             {questions.map((q, i) => {
-                                const ans = answers[i];
+                                const ans = answers[i]
                                 const isAnswered =
                                     ans !== undefined &&
                                     ans !== '' &&
-                                    (Array.isArray(ans) ? ans.length > 0 : true);
+                                    (Array.isArray(ans) ? ans.length > 0 : true)
 
                                 return (
                                     <button
-                                        key={i}
+                                        key={q.id ?? i}
                                         onClick={() => dispatch(setCurrentIndex(i))}
-                                        className={`aspect-square flex items-center justify-center rounded-(--xl) font-bold cursor-pointer transition-colors ${i === currentIndex
-                                            ? 'bg-(--primary) text-white shadow-lg ring-4 ring-(--primary)/20'
-                                            : isAnswered
-                                                ? 'bg-(--secondary-container) text-(--on-secondary-container) border border-(--secondary)/30'
-                                                : 'bg-(--surface-container-lowest) text-(--on-surface-variant) hover:bg-(--surface-container-high) border border-(--outline-variant)/10'
+                                        className={`aspect-square flex items-center justify-center rounded-(--xl) font-bold cursor-pointer transition-colors
+                                            ${i === currentIndex
+                                                ? 'bg-(--primary) text-white shadow-lg ring-4 ring-(--primary)/20'
+                                                : isAnswered
+                                                    ? 'bg-(--secondary-container) text-(--on-secondary-container) border border-(--secondary)/30'
+                                                    : 'bg-(--surface-container-lowest) text-(--on-surface-variant) hover:bg-(--surface-container-high) border border-(--outline-variant)/10'
                                             }`}
                                     >
                                         {i + 1}
                                     </button>
-                                );
+                                )
                             })}
                         </div>
 
@@ -407,53 +437,55 @@ const TestPage = () => {
                                         {question.text}
                                     </h2>
                                 </div>
+
                                 <QuestionComponent
                                     options={question.options ?? []}
                                     name={`question_${question.id}`}
                                     language={normalizedLanguage}
-                                    value={
-                                        // answers[question.id] ??
-                                        // (question.type === 'multiple_choice' ? [] : '')
-                                        answers[currentIndex] ?? (question.question_type === 'multiple_choice' ? [] : '')
-                                    }
-                                    onChange={
-                                        // (value) => handleAnswerChange(question.id, value)
-                                        (value) => dispatch(setQuizAnswer({ index: currentIndex, value }))
-                                    }
+                                    value={answers[currentIndex] ?? (question.question_type === 'multiple_choice' ? [] : '')}
+                                    onChange={(value) => dispatch(setQuizAnswer({ index: currentIndex, value }))}
                                 />
                             </>
                         )}
                     </div>
 
-                    <footer className="flex flex-col md:flex-row items-center justify-between gap-4 bg-(--surface-container-low) p-6 rounded-(--xl) w-full">
+                    {/* ── Navigation footer ── */}
+                    <footer className="flex items-center justify-between gap-4 bg-(--surface-container-low) p-6 rounded-(--xl) w-full">
 
-                        {/* LEFT BUTTON */}
+                        {/* Prev — disabled on first question */}
                         <button
                             onClick={() => dispatch(prevQuestion())}
                             disabled={currentIndex === 0}
-                            className="flex items-center gap-2 px-6 py-4 rounded-(--xl) font-headline font-bold text-(--on-surface-variant) bg-(--surface-container-highest) hover:bg-(--surface-container-high) transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center gap-2 px-6 py-4 rounded-(--xl) font-headline font-bold text-(--on-surface-variant) bg-(--surface-container-highest) hover:bg-(--surface-container-high) transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <FaChevronLeft />
                             Предыдущий
                         </button>
-
-                        {/* RIGHT BUTTON */}
-                        <button
-                            onClick={() => dispatch(nextQuestion())}
-                            disabled={currentIndex === total - 1}
-                            className="flex items-center gap-2 px-6 py-4 rounded-(--xl) font-headline font-bold text-(--primary) bg-(--primary)/10 hover:bg-(--primary)/20 transition-all active:scale-95"
-                        >
-                            Следующий
-                            <FaChevronRight />
-                        </button>
-
+                        {isLastQuestion ? (
+                            <button
+                                onClick={handleFinish}
+                                className="flex items-center gap-2 px-6 py-4 rounded-(--xl) font-headline font-bold text-(--primary) bg-(--primary)/10 hover:bg-(--primary)/20 transition-all active:scale-95"
+                            >
+                                Отправить
+                                <MdOutlineTaskAlt />
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => dispatch(nextQuestion())}
+                                className="flex items-center gap-2 px-6 py-4 rounded-(--xl) font-headline font-bold text-(--primary) bg-(--primary)/10 hover:bg-(--primary)/20 transition-all active:scale-95"
+                            >
+                                Следующий
+                                <FaChevronRight />
+                            </button>
+                        )}
                     </footer>
                 </section>
             </main>
 
+            {/* Subtle exam-mode border */}
             <div className="fixed inset-0 pointer-events-none border-12 border-(--primary)/5 rounded-4xl z-100" />
         </section>
-    );
-};
+    )
+}
 
-export default TestPage;
+export default TestPage
