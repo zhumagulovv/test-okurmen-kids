@@ -1,24 +1,14 @@
-// src/components/detail_catalog_test/DetailCatalogTest.jsx
-
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+
+import { PiMailbox } from 'react-icons/pi';
 
 import { fetchSessions } from '../../features/sessionId/sessionIdSlice';
 import { startTrainingSessionByKey, clearTrainingError } from '../../features/training/TrainingSessionSlice';
 
 import ProCarousel from '../ControlledCarousel/ControlledCarousel';
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const formatDate = (iso) =>
-    iso
-        ? new Date(iso).toLocaleDateString('ru-RU', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-        })
-        : '—';
+import { formatDate } from '../../helpers/helpers';
 
 // ── Skeleton card ─────────────────────────────────────────────────────────────
 
@@ -41,7 +31,7 @@ const SkeletonCard = () => (
 const EmptyState = () => (
     <div className="col-span-full flex flex-col items-center justify-center py-24 text-(--on-surface-variant)">
         <div className="w-20 h-20 rounded-full bg-(--surface-container-high) flex items-center justify-center mb-4">
-            <span className="text-4xl">📭</span>
+            <PiMailbox className="text-4xl" />
         </div>
         <p className="font-headline font-bold text-xl opacity-40">Тренировочных сессий нет</p>
         <p className="text-sm mt-2 opacity-30">Попросите преподавателя создать тренировочную сессию</p>
@@ -50,7 +40,7 @@ const EmptyState = () => (
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-const DetailCatalogTest = () => {
+const DetailCatalogTest = ({ scroollRef }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -86,7 +76,7 @@ const DetailCatalogTest = () => {
     );
 
     return (
-        <section className="bg-(--surface) text-(--on-surface) min-h-screen pb-32">
+        <section ref={scroollRef} className="bg-(--surface) text-(--on-surface) min-h-screen pb-32">
             <div className="bg-[#efefff] dark:bg-slate-800 h-1 w-full" />
 
             <main className="max-w-7xl mx-auto px-6 pt-8">

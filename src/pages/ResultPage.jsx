@@ -171,56 +171,6 @@ const ResultPage = () => {
                     </div>
                 </div>
             </section>
-
-            {/* <section>
-                <h2 className="font-headline font-bold text-2xl text-(--on-surface) mb-6">Разбор ответов</h2>
-                <div className="flex flex-col gap-4">
-                    {result.answers?.map((a, i) => {
-                        const isPending = a.grading_status === 'processing'
-                        const isCorrect = a.is_correct === true
-                        const isWrong = a.is_correct === false
-
-                        return (
-                            <div
-                                key={a.question_id}
-                                className={`p-6 rounded-(--xl) border-2 transition-colors ${isPending
-                                        ? 'bg-(--surface-container-low) border-(--outline-variant)/20'
-                                        : isCorrect
-                                            ? 'bg-(--primary)/5 border-(--primary)/20'
-                                            : 'bg-(--error)/5 border-(--error)/20'
-                                    }`}
-                            >
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="flex items-start gap-4">
-                                        <span className="w-8 h-8 rounded-lg bg-(--surface-container-high) flex items-center justify-center text-sm font-bold text-(--on-surface-variant) shrink-0">
-                                            {i + 1}
-                                        </span>
-                                        <div>
-                                            <p className="font-semibold text-(--on-surface) mb-1">{a.question_text}</p>
-                                            <span className="text-xs font-medium text-(--on-surface-variant) uppercase tracking-widest">
-                                                {a.question_type}
-                                            </span>
-                                            {a.answer_text && (
-                                                <p className="mt-2 text-sm text-(--on-surface-variant) bg-(--surface-container-high) px-3 py-2 rounded-lg">
-                                                    {a.answer_text}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <span className={`shrink-0 text-xs font-bold px-3 py-1.5 rounded-full ${isPending
-                                            ? 'bg-(--surface-container-high) text-(--on-surface-variant)'
-                                            : isCorrect
-                                                ? 'bg-(--primary)/10 text-(--primary)'
-                                                : 'bg-(--error)/10 text-(--error)'
-                                        }`}>
-                                        {isPending ? '⏳ Проверяется' : isCorrect ? '✓ Верно' : '✗ Неверно'}
-                                    </span>
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-            </section> */}
         </main>
     )
 }

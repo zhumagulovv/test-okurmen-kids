@@ -1,62 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+
+// ── Icons ────────────────────────────────────────────────────────────────────
+import { FiSearch, FiRefreshCw, FiAward, FiClock, FiUsers, FiZap } from 'react-icons/fi'
+import { HiMiniTrophy } from 'react-icons/hi2'
+import { MdOutlineFilterList } from 'react-icons/md'
+import { LuChevronLeft, LuChevronRight } from 'react-icons/lu'
+import { RiVipCrownLine } from 'react-icons/ri'
+
 import {
     fetchLeaderboard,
     fetchLeaderboardById,
     setSelectedSessionId,
 } from '../features/leaderboard/leaderboardSlice'
 
-// ── Icons ────────────────────────────────────────────────────────────────────
-import { FiSearch, FiRefreshCw, FiAward, FiClock, FiUsers, FiZap } from 'react-icons/fi'
-import { HiMiniTrophy } from 'react-icons/hi2'
-import { MdOutlineLeaderboard, MdOutlineFilterList } from 'react-icons/md'
-import { LuChevronLeft, LuChevronRight, LuMedal } from 'react-icons/lu'
-import { RiVipCrownLine } from 'react-icons/ri'
 import Dropdown from '../components/common/Dropdown'
 import { fetchSessions, selectActiveSessionId, selectSessionOptions } from '../features/sessionId/sessionIdSlice'
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+import { CATEGORIES, SORT_OPTIONS } from '../constants/constants'
+import { formatDuration, medalColor, scoreColor } from '../helpers/helpers'
+import StatsSkeleton from '../components/common/StatsSkeleton'
 
 const PAGE_SIZE = 10
-
-const CATEGORIES = [
-    { id: 'all', label: 'Все', icon: FiUsers },
-    { id: 'top10', label: 'Топ 10', icon: RiVipCrownLine },
-    { id: 'passed', label: '≥ 75%', icon: FiZap },
-    { id: 'failed', label: '< 75%', icon: LuMedal },
-]
-
-const SORT_OPTIONS = [
-    { value: 'rank', label: 'По рейтингу' },
-    { value: 'score', label: 'По баллу' },
-    { value: 'duration', label: 'По времени' },
-    { value: 'name', label: 'По имени' },
-]
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const formatDuration = (seconds) => {
-    if (seconds == null) return '—'
-    const m = Math.floor(seconds / 60)
-    const s = Math.round(seconds % 60)
-    return `${m}м ${String(s).padStart(2, '0')}с`
-}
-
-const medalColor = (rank) => {
-    if (rank === 1) return '#FFD700'
-    if (rank === 2) return '#C0C0C0'
-    if (rank === 3) return '#CD7F32'
-    return null
-}
-
-const scoreColor = (score) => {
-    if (score >= 90) return 'var(--primary)'
-    if (score >= 75) return '#059669'
-    if (score >= 60) return '#d97706'
-    return 'var(--error)'
-}
-
-// ── Component ─────────────────────────────────────────────────────────────────
 
 const LiderBortPage = () => {
     const dispatch = useDispatch()
@@ -76,6 +41,7 @@ const LiderBortPage = () => {
     // ── On mount: load global leaderboard ────────────────────────────────────
     useEffect(() => {
         dispatch(fetchLeaderboard())
+        dispatch(fetchSessions())
     }, [dispatch])
 
     // ── If current session exists, pre-load session leaderboard ──────────────
@@ -87,8 +53,12 @@ const LiderBortPage = () => {
     }, [sessionData, selectedSessionId, dispatch])
 
     useEffect(() => {
-        dispatch(fetchSessions())
-    }, [dispatch])
+        if (sessionOptions.length && !selectedSessionId) {
+            const last = sessionOptions[sessionOptions.length - 1]
+            dispatch(setSelectedSessionId(last.value))
+            dispatch(fetchLeaderboardById(last.value))
+        }
+    }, [sessionOptions, selectedSessionId, dispatch])
 
     // ── Handle session ID search ─────────────────────────────────────────────
     const handleSessionSearch = useCallback((e) => {
@@ -207,17 +177,14 @@ const LiderBortPage = () => {
                     >
                         <div className="flex-1 md:max-w-md mt-6 md:mt-0 md:ml-auto">
                             <Dropdown
-                                options={sessionOptions.map((s) => s.label)}
-                                value={sessionOptions.find((s) => s.value === selectedSessionId)?.label || ''}
+                                options={sessionOptions}
+                                value={selectedSessionId}
                                 placeholder="Выберите сессию..."
                                 variant="hero"
-                                onChange={(label) => {
-                                    const session = sessionOptions.find((s) => s.label === label)
-                                    if (session) {
-                                        dispatch(setSelectedSessionId(session.value))
-                                        dispatch(fetchLeaderboardById(session.value))
-                                        setPage(1)
-                                    }
+                                onChange={(id) => {
+                                    dispatch(setSelectedSessionId(id))
+                                    dispatch(fetchLeaderboardById(id))
+                                    setPage(1)
                                 }}
                             />
                         </div>
@@ -236,24 +203,34 @@ const LiderBortPage = () => {
                 </div>
 
                 {/* ── Stats strip ───────────────────────────────────────── */}
-                {stats && (
-                    <div className="max-w-7xl mx-auto mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {[
-                            { icon: FiUsers, label: 'Участников', value: stats.total },
-                            { icon: FiAward, label: 'Средний балл', value: `${stats.avg}%` },
-                            { icon: FiZap, label: 'Прошли (≥75%)', value: stats.passed },
-                            { icon: RiVipCrownLine, label: 'Лидер', value: stats.top?.student_name?.split(' ')[0] ?? '—' },
-                        ].map(({ icon: Icon, label, value }) => (
-                            <div key={label} className="bg-white/10 rounded-xl px-5 py-4 flex items-center gap-4 backdrop-blur-sm">
-                                <Icon className="text-white/70 text-2xl shrink-0" />
-                                <div>
-                                    <div className="text-white font-headline font-bold text-xl">{value}</div>
-                                    <div className="text-white/60 text-xs">{label}</div>
+                {
+                    loading ? (
+                        <StatsSkeleton />
+                    ) : stats && (
+                        <div className="max-w-7xl mx-auto mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { icon: FiUsers, label: 'Участников', value: stats.total ?? 0 },
+                                { icon: FiAward, label: 'Средний балл', value: stats.avg ? `${stats.avg}%` : 'Нет данных' },
+                                { icon: FiZap, label: 'Прошли (≥75%)', value: stats.passed ?? 0 },
+                                {
+                                    icon: RiVipCrownLine,
+                                    label: 'Лидер',
+                                    value: stats.top?.student_name
+                                        ? stats.top.student_name.split(' ')[0]
+                                        : 'Нет данных'
+                                },
+                            ].map(({ icon: Icon, label, value }) => (
+                                <div key={label} className="bg-white/10 rounded-xl px-5 py-4 flex items-center gap-4 backdrop-blur-sm">
+                                    <Icon className="text-white/70 text-2xl shrink-0" />
+                                    <div>
+                                        <div className="text-white font-headline font-bold text-xl">{value}</div>
+                                        <div className="text-white/60 text-xs">{label}</div>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )
+                }
             </div>
 
             {/* ── CONTENT ─────────────────────────────────────────────────── */}
@@ -314,26 +291,6 @@ const LiderBortPage = () => {
                         Обновить
                     </button>
                 </div>
-
-                {/* ── Session label ────────────────────────────────────────── */}
-                {/* {selectedSessionId && (
-                    <div className="mb-4 flex items-center gap-3 text-sm text-(--on-surface-variant)">
-                        <span className="bg-(--primary)/10 text-(--primary) px-3 py-1.5 rounded-lg font-bold">
-                            Сессия: {selectedSessionId.slice(0, 8)}…
-                        </span>
-                        <button
-                            onClick={() => {
-                                dispatch(setSelectedSessionId(''))
-                                setSessionInput('')
-                                dispatch(fetchLeaderboard())
-                                setPage(1)
-                            }}
-                            className="text-(--error) text-xs font-bold hover:underline"
-                        >
-                            × Сбросить фильтр
-                        </button>
-                    </div>
-                )} */}
 
                 {/* ── Error ───────────────────────────────────────────────── */}
                 {error && (

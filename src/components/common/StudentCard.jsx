@@ -1,27 +1,6 @@
 import { RxAvatar } from "react-icons/rx"
-
-const STATUS_STYLES = {
-    Completed: 'bg-green-100 text-green-700',
-    'In Progress': 'bg-blue-100 text-blue-700',
-    Pending: 'bg-yellow-100 text-yellow-700',
-    Review: 'bg-orange-100 text-orange-700',
-}
-
-const STATUS_LABELS = {
-    Completed: 'Completed',
-    'In Progress': 'In Progress',
-    Pending: 'Pending',
-    Review: 'Требуется проверка',
-}
-
-function StatusBadge({ status }) {
-    const cls = STATUS_STYLES[status] ?? 'bg-gray-100 text-gray-600'
-    return (
-        <span className={`${cls} px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest`}>
-            {STATUS_LABELS[status] ?? status}
-        </span>
-    )
-}
+import { STATUS_LABELS, STATUS_STYLES } from "../../constants/constants"
+import StatusBadge from "./StatusBadge"
 
 // ─── Student card ──────────────────────────────────────────────────────────────
 

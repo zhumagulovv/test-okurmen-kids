@@ -1,27 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { GrFormNextLink, GrFormPreviousLink } from "react-icons/gr"
 
-const slides = [
-    {
-        tag: "Programming Track",
-        title: "Master the Art of Python",
-        description: "Start your journey into backend development.",
-        image:
-            "https://lh3.googleusercontent.com/aida-public/AB6AXuDCG-r_Cu6GcsW01BnoK2wPTeYY2nKCI-GOeGEW2Q4-opL7ia93uGKYwCQOlr0sHoFnZgKFwkKLOY9L2TfshPMhGmRBsJj-gAxxuFIfHWdbmwBqHDjD6CI4VYdS9tbQ554o7j9ERK5XL2Rm9yOPjrDBSNk15RENpujcIzICtEBA3KfzqyRCtjDgBnmibd_hK7X2DhVEkPDISfoCfMG8jvXPgpzaq3L7Agyjn4tk4kkNaaYqMOAXFQvyalG8ZcSwWaS1lnulkv3o2HA"
-    },
-    {
-        tag: "Frontend Track",
-        title: "JavaScript Mastery",
-        description: "Build dynamic UI and web apps.",
-        image: "https://cdn-icons-png.flaticon.com/512/5968/5968292.png"
-    },
-    {
-        tag: "Web Basics",
-        title: "HTML & CSS",
-        description: "Create responsive layouts.",
-        image: "https://cdn-icons-png.flaticon.com/512/732/732212.png"
-    }
-]
+import { SLIDES } from "../../constants/constants"
 
 export default function ProCarousel() {
     const [index, setIndex] = useState(0)
@@ -31,17 +11,17 @@ export default function ProCarousel() {
     // AUTO SLIDER
     useEffect(() => {
         const interval = setInterval(() => {
-            setIndex((prev) => (prev + 1) % slides.length)
+            setIndex((prev) => (prev + 1) % SLIDES.length)
         }, 4000)
 
         return () => clearInterval(interval)
     }, [])
 
     const nextSlide = () =>
-        setIndex((prev) => (prev + 1) % slides.length)
+        setIndex((prev) => (prev + 1) % SLIDES.length)
 
     const prevSlide = () =>
-        setIndex((prev) => (prev - 1 + slides.length) % slides.length)
+        setIndex((prev) => (prev - 1 + SLIDES.length) % SLIDES.length)
 
     // SWIPE
     const handleTouchStart = (e) => {
@@ -68,7 +48,7 @@ export default function ProCarousel() {
                 className="flex h-full items-center transition-transform duration-500 ease-in-out"
                 style={{ transform: `translateX(-${index * 100}%)` }}
             >
-                {slides.map((slide, i) => (
+                {SLIDES.map((slide, i) => (
                     <div
                         key={i}
                         className="min-w-full h-full flex flex-col md:flex-row items-center justify-center gap-8 p-6 md:p-12"
@@ -119,7 +99,7 @@ export default function ProCarousel() {
 
             {/* DOTS */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                {slides.map((_, i) => (
+                {SLIDES.map((_, i) => (
                     <div
                         key={i}
                         onClick={() => setIndex(i)}

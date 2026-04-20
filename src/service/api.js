@@ -13,11 +13,6 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
     (config) => {
-        // const sessionKey = localStorage.getItem('sessionKey')
-        // if (sessionKey) {
-        //     config.headers.Authorization = `Session ${sessionKey}`
-        // }
-        // You can add auth tokens here if needed
         return config;
     },
     (error) => {

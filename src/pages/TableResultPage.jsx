@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { IoMdSearch, IoMdTrendingUp } from 'react-icons/io'
 
 import Dropdown from '../components/common/Dropdown'
-import { LuChevronLeft, LuChevronRight } from 'react-icons/lu'
-import { useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchResultTable, resetResult, selectAverageScore, selectCurrentPage, selectFilteredStudents, selectFilters, selectGroupOptions, selectMeta, selectPagedStudents, selectResultError, selectResultStatus, selectTopStudents, selectTotalPages, setGroupFilter, setPage, setSearch, setStatusFilter } from '../features/resultTable/resultTableSlice'
 import SkeletonCard from '../components/common/SkeletonCard'
@@ -56,7 +54,7 @@ const TableResultPage = () => {
         [dispatch]
     )
     const handleSearch = useCallback(
-        (e) => dispatch(setSearch(e.target.value))
+        (e) => dispatch(setSearch(e.target.value)),
         [dispatch]
     )
     const handleGroupChange = useCallback((val) => dispatch(setGroupFilter(val)), [dispatch])
@@ -71,7 +69,7 @@ const TableResultPage = () => {
 
                 {/* ── Header stats ── */}
                 <section className="mb-10">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         {/* Title + session picker */}
                         <div>
@@ -81,41 +79,6 @@ const TableResultPage = () => {
                             <p className="text-(--on-surface-variant) text-lg mb-4">
                                 Подробный анализ прогресса студентов и результатов экзаменов.
                             </p>
-                        </div>
-
-                        {/* Top students card */}
-                        <div className="bg-(--surface-container-lowest) p-6 rounded-2xl shadow-[0_8px_24px_rgba(36,44,81,0.02)] border border-(--surface-container)">
-                            <h3 className="text-(--on-surface-variant) font-bold text-sm uppercase mb-2">
-                                Лучшие ученики
-                            </h3>
-                            <div className="text-3xl font-black text-(--on-surface)">
-                                {topStudents.length}{' '}
-                                <span className="text-sm font-medium text-(--on-surface-variant)">Студенты</span>
-                            </div>
-                            <div className="mt-4 flex -space-x-3">
-                                {topStudents.slice(0, 3).map((s) => (
-                                    s.avatar ? (
-                                        <img
-                                            key={s.id}
-                                            className="w-10 h-10 rounded-full border-2 border-(--surface-container-lowest) object-cover"
-                                            src={s.avatar}
-                                            alt={s.name}
-                                        />
-                                    ) : (
-                                        <div
-                                            key={s.id}
-                                            className="w-10 h-10 rounded-full border-2 border-(--surface-container-lowest) bg-(--secondary-container) text-(--on-secondary-container) flex items-center justify-center text-sm font-bold"
-                                        >
-                                            {s.name?.[0]}
-                                        </div>
-                                    )
-                                ))}
-                                {topStudents.length > 3 && (
-                                    <div className="w-10 h-10 rounded-full border-2 border-(--surface-container-lowest) bg-(--primary-container) text-(--on-primary-container) flex items-center justify-center text-xs font-bold">
-                                        +{topStudents.length - 3}
-                                    </div>
-                                )}
-                            </div>
                         </div>
 
                         {/* Average score card */}
@@ -156,12 +119,9 @@ const TableResultPage = () => {
                                         Сессия:
                                     </span>
                                     <Dropdown
-                                        options={sessionOptions.map((s) => s.label)}
-                                        value={sessionOptions.find((s) => s.value === activeSessionId)?.label || ''}
-                                        onChange={(label) => {
-                                            const session = sessionOptions.find((s) => s.label === label)
-                                            if (session) dispatch(setActiveSession(session.value))
-                                        }}
+                                        options={sessionOptions}
+                                        value={activeSessionId}
+                                        onChange={(id) => dispatch(setActiveSession(id))}
                                         placeholder="Выберите сессию"
                                     />
                                 </div>

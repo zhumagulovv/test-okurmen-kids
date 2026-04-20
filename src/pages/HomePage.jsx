@@ -1,4 +1,4 @@
-import React from 'react'
+import { useRef } from 'react'
 
 import Hero from '../components/hero/Hero'
 import ExamComponent from '../components/exam_component/ExamComponent'
@@ -7,13 +7,14 @@ import Categories from '../components/categories/Categories'
 import DetailCatalogTest from '../components/detail_catalog_test/DetailCatalogTest'
 
 const HomePage = () => {
+    const practiceRef = useRef(null)
     return (
         <main>
-            <Hero />
+            <Hero scroollRef={practiceRef} />
             <ExamComponent />
             <HowItWorks />
             <Categories />
-            <DetailCatalogTest />
+            <DetailCatalogTest scroollRef={practiceRef} />
         </main>
     )
 }

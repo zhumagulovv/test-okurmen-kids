@@ -140,19 +140,15 @@ export const selectPageSize = (state) => state.result.pageSize;
 export const selectFilteredStudents = createSelector(
     selectAllStudents,
     selectFilters,
-    (students, { search, group, status }) => {
-        return students.filter((s) => {
-            const matchSearch =
-                !search ||
-                s.name?.toLowerCase().includes(search.toLowerCase()) ||
-                s.group?.toLowerCase().includes(search.toLowerCase()) ||
-                String(s.id ?? "").includes(search);
+    (students, { search }) => {
+        const q = search?.toLowerCase().trim() || '';
 
-            const matchGroup = !group || s.group === group;
-            const matchStatus = !status || s.status === status;
+        if (!q) return students;
 
-            return matchSearch && matchGroup && matchStatus;
-        });
+        return students.filter((s) =>
+            s.student_name?.toLowerCase().includes(q) ||
+            String(s.attempt_id ?? '').includes(q)
+        );
     }
 );
 

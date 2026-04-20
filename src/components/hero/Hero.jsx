@@ -7,8 +7,11 @@ import { MdVerified } from 'react-icons/md'
 import { RiTimerLine } from 'react-icons/ri'
 import { TbSchool } from 'react-icons/tb'
 
-const Hero = () => {
+const Hero = ({ scroollRef }) => {
     const navigate = useNavigate();
+    const handleClick = () => {
+        scroollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
     return (
         <section className="grow flex items-center justify-center relative mesh-gradient overflow-hidden">
             <div className="absolute inset-0 geometric-dots opacity-50"></div>
@@ -19,18 +22,18 @@ const Hero = () => {
                 <div className="lg:col-span-7 space-y-10 text-left">
                     <div className="space-y-6">
                         <div
-                            className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white shadow-sm secondary-border text-color-secondary font-bold text-xs tracking-wider font-label uppercase rounded-full">
+                            className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white shadow-sm border-(--secondary)/10 text-(--secondary) font-bold text-xs tracking-wider font-label uppercase rounded-full">
                             <MdVerified className="text-xl" />
                             Официальная сертификация
                         </div>
                         <div className="space-y-4">
                             <h2
-                                className="text-6xl md:text-7xl font-extrabold font-headline leading-[1.1] text-color-two tracking-tight">
+                                className="text-6xl md:text-7xl font-extrabold font-headline leading-[1.1] text-(--on-surface) tracking-tight">
                                 IT Академия: <br />
                                 <span
                                     className="bg-linear-to-r via-(--secondary) to-(--primary) bg-size-[200%_auto] animate-gradient text-transparent bg-clip-text text-color text-balance">Экзаменационный центр</span>
                             </h2>
-                            <p className="text-xl text-color-three max-w-xl leading-relaxed font-medium text-wrap">
+                            <p className="text-xl text-(--on-surface-variant) max-w-xl leading-relaxed font-medium text-wrap">
                                 Добро пожаловать в профессиональный портал оценки. Введите ваш уникальный код сессии ниже, чтобы пройти аутентификацию и начать путь к цифровой сертификации.
                             </p>
                         </div>
@@ -38,22 +41,22 @@ const Hero = () => {
                     <div className="flex flex-wrap gap-6">
                         <div
                             className="flex items-center gap-4 bg-white/40 backdrop-blur-sm p-4 rounded-2xl border border-white/60 min-w-45">
-                            <div className="w-12 h-12 flex items-center justify-center bacground-color border-raduis">
-                                <RiTimerLine className='text-2xl text-color' />
+                            <div className="w-12 h-12 flex items-center justify-center bg-(--primary)/5 rounded-(--xl)">
+                                <RiTimerLine className='text-2xl text-(--primary)' />
                             </div>
                             <div>
-                                <h4 className="font-bold text-color-two leading-none">30 минут</h4>
-                                <p className="text-xs text-color-three mt-1">Сеанс с ограничением по времени</p>
+                                <h4 className="font-bold text-(--on-surface) leading-none">30 минут</h4>
+                                <p className="text-xs text-(--on-surface-variant) mt-1">Сеанс с ограничением по времени</p>
                             </div>
                         </div>
                         <div
                             className="flex items-center gap-4 bg-white/40 backdrop-blur-sm p-4 rounded-2xl border border-white/60 min-w-45">
-                            <div className="w-12 h-12 rounded-4xl flex items-center justify-center secondary-background">
-                                <BiTerminal className='text-2xl text-color' />
+                            <div className="w-12 h-12 rounded-4xl flex items-center justify-center bg-(--secondary)/10">
+                                <BiTerminal className='text-2xl text-(--primary)' />
                             </div>
                             <div>
-                                <h4 className="font-bold text-color-two leading-none">Живое кодирование</h4>
-                                <p className="text-xs text-color-three mt-1">IDE в реальном времени</p>
+                                <h4 className="font-bold text-(--on-surface) leading-none">Живое кодирование</h4>
+                                <p className="text-xs text-(--on-surface-variant) mt-1">IDE в реальном времени</p>
                             </div>
                         </div>
                     </div>
@@ -72,14 +75,15 @@ const Hero = () => {
                                 <IoRocketSharp />
                             </button>
                             <button
-                                className="w-full bg-white text-(--secondary) py-4 rounded-2xl font-bold text-md border-2 active:scale-[0.98] transition-all flex items-center justify-center gap-2 secondary-border-hover secondary-background-hover">
+                                onClick={handleClick}
+                                className="w-full bg-white text-(--secondary) py-4 rounded-2xl font-bold text-md border-2 active:scale-[0.98] transition-all flex items-center justify-center gap-2 hover:border-(--secondary)/5 hover:bg-(--secondary)/5 cursor-pointer">
                                 <TbSchool className='text-2xl ' />
                                 GO! в режим практики
                             </button>
                         </div>
                         <div className="bg-surface-container-low/50 p-4 rounded-xl border border-primary/5">
                             <p className="text-center text-xs text-on-surface-variant leading-relaxed">
-                                Нужна помощь? <a href='tel:+996702247092' className="text-color font-bold">руководитель тренеров</a> для кода идентификации класса, чтобы начать.
+                                Нужна помощь? <a href='tel:+996702247092' className="text-(--primary) font-bold">руководитель тренеров</a> для кода идентификации класса, чтобы начать.
                             </p>
                         </div>
                     </div>

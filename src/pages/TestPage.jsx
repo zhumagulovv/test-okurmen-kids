@@ -9,6 +9,7 @@ import SingleChoice from '../components/common/SingleChoice';
 import CodeAnswer from '../components/common/CodeAnswer';
 import TextAnswer from '../components/common/TextAnswer';
 import MultiChoice from '../components/common/MultiChoice';
+
 import {
     incrementTimer,
     nextQuestion,
@@ -17,11 +18,15 @@ import {
     setQuizAnswer,
     startTimer,
 } from '../features/quiz/quizSlice';
+
 import { fetchResult, finishAttempt, submitAnswer } from '../features/attempt/attemptSlice';
 
-import logoImage from '../assets/logo.png'
 import { BLOCKED_COMBINATIONS } from '../constants/constants';
 import { useMatchHotkey } from '../hooks/useMatchHotkey';
+import { normalizeLanguage } from '../helpers/normalizeLanguage';
+
+import logoImage from '../assets/logo.png'
+import { formatTime } from '../helpers/formatTime';
 
 // ---------------------------------------------------------------------------
 // Constants & helpers
@@ -32,21 +37,6 @@ const QUESTION_COMPONENTS = {
     multiple_choice: MultiChoice,
     code: CodeAnswer,
     text: TextAnswer,
-};
-
-const normalizeLanguage = (lang) => {
-    if (!lang) return 'layout';
-    const l = lang.toLowerCase();
-    if (l.includes('python')) return 'python';
-    if (l.includes('js') || l.includes('javascript')) return 'js';
-    if (l.includes('html') || l.includes('css')) return 'layout';
-    return 'fullstack';
-};
-
-const formatTime = (seconds) => {
-    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-    const s = String(seconds % 60).padStart(2, '0');
-    return `${m}:${s}`;
 };
 
 /**
@@ -278,51 +268,6 @@ const TestPage = () => {
 
     return (
         <section className="bg-(--surface-container-lowest) text-(--on-surface) min-h-screen flex flex-col">
-            {/* ── Header ── */}
-            {/* <header className="w-full top-0 sticky z-50 bg-(--surface-container-lowest) px-4 md:px-6 py-12 max-w-390 flex flex-col md:flex-col justify-between items-center gap-4 mx-auto">
-                <div className="flex items-center gap-6 md:w-auto">
-                    <div className="flex flex-col">
-                        <span className="text-(--on-surface-variant) font-label text-xs uppercase tracking-widest mb-1">
-                            Текущий прогресс
-                        </span>
-                        <div className="flex items-center gap-3">
-                            <span className="font-headline font-bold text-lg text-(--primary)">
-                                Вопрос {currentIndex + 1} из {total}
-                            </span>
-                            <span className="text-(--on-surface-variant) font-medium text-sm bg-(--surface-container-low) px-2 py-1 rounded-lg">
-                                {progress}% завершено
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex-1 max-w-xl w-full md:mx-12">
-                    <div className="h-2 w-full bg-(--surface-container-high) rounded-full overflow-hidden">
-                        <div
-                            className="h-full bg-(--primary) rounded-full transition-all duration-500"
-                            style={{ width: `${progress}%` }}
-                        />
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-3 bg-(--tertiary-container)/10 border border-(--tertiary-container)/20 px-4 py-2 rounded-xl">
-                    <span className="material-symbols-outlined text-(--tertiary-dim)">таймер</span>
-                    <span className="font-headline font-extrabold text-xl text-(--tertiary-dim) tabular-nums">
-                        {formatTime(elapsed)}
-                    </span>
-                </div>
-
-                <div className="w-full md:w-auto">
-                    <button
-                        onClick={handleFinish}
-                        className="w-full md:w-auto px-10 py-4 rounded-xl bg-linear-to-r from-(--primary) to-(--primary-container) text-white font-headline font-extrabold text-lg shadow-xl shadow-(--primary)/20 hover:shadow-2xl hover:shadow-(--primary)/30 transition-all active:scale-95 flex items-center justify-center gap-3"
-                    >
-                        Отправить
-                        <MdOutlineTaskAlt />
-                    </button>
-                </div>
-            </header> */}
-
             <header className="w-full sticky top-0 z-50 bg-(--surface-container-lowest) px-4 md:px-6 py-4">
                 <div className="max-w-382.5 md:max-w-382.5 mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
 
@@ -479,28 +424,6 @@ const TestPage = () => {
                             </>
                         )}
                     </div>
-
-                    {/* ── Footer nav ── */}
-                    {/* <footer className="flex flex-col md:flex-row justify-between items-center gap-4 bg-(--surface-container-low) p-6 rounded-(--xl)">
-                        <div className="flex gap-10 md:w-auto">
-                            <button
-                                onClick={() => dispatch(prevQuestion())}
-                                disabled={currentIndex === 0}
-                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-(--xl) font-headline font-bold text-(--on-surface-variant) bg-(--surface-container-highest) hover:bg-(--surface-container-high) transition-all active:scale-95 disabled:opacity-50"
-                            >
-                                <FaChevronLeft />
-                                Предыдущий
-                            </button>
-                            <button
-                                onClick={() => dispatch(nextQuestion())}
-                                disabled={currentIndex === total - 1}
-                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-(--xl) font-headline font-bold text-(--primary) bg-(--primary)/10 hover:bg-(--primary)/20 transition-all active:scale-95"
-                            >
-                                Следующий
-                                <FaChevronRight />
-                            </button>
-                        </div>
-                    </footer> */}
 
                     <footer className="flex flex-col md:flex-row items-center justify-between gap-4 bg-(--surface-container-low) p-6 rounded-(--xl) w-full">
 

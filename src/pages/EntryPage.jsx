@@ -34,10 +34,10 @@ const EntryPage = () => {
     }
 
     return (
-        <section className='main-background font-body text-color-two min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden'>
+        <section className='bg-(--background) font-body text-(--on-surface) min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden'>
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] sixth-background">
             </div>
-            <div className="absolute bottom-[-5%] right-[-5%] w-[35%] h-[35%] rounded-full blur-[100px] seventh-background">
+            <div className="absolute bottom-[-5%] right-[-5%] w-[35%] h-[35%] rounded-full blur-[100px] bg-(--secondary-container)/30">
             </div>
             <div className="w-full max-w-lg z-10 relative">
                 <MdClose onClick={() => navigate("/")} className='text-3xl absolute top-2 right-2 cursor-pointer' />
@@ -46,8 +46,8 @@ const EntryPage = () => {
                     <div className="mb-8 w-20 h-20 bg-surface-container-high rounded-full flex items-center justify-center">
                         <img alt="Platform Logo" className="w-24 h-24 object-contain" src={logoImage} />
                     </div>
-                    <h1 className="font-headline font-bold text-3xl md:text-4xl text-color-two mb-4 tracking-tight">Введите ключ сессии</h1>
-                    <p className="text-color-three text-lg leading-relaxed mb-10 max-w-sm">
+                    <h1 className="font-headline font-bold text-3xl md:text-4xl text-(--on-surface) mb-4 tracking-tight">Введите ключ сессии</h1>
+                    <p className="text-(--on-surface-variant) text-lg leading-relaxed mb-10 max-w-sm">
                         Пожалуйста, введите ключ, предоставленный вашим преподавателем, чтобы открыть экзамен.
                     </p>
                     <div className="w-full space-y-6">

@@ -16,22 +16,22 @@ const Footer = () => {
                     <div className="space-y-4">
                         <h5 className="font-bold text-on-surface">Навигация</h5>
                         <ul className="space-y-2 text-sm text-on-surface-variant">
-                            <li><a className="transition-colors text-hover" href="/">Главная</a></li>
-                            <li><a className="transition-colors text-hover" href="#">Как использовать</a></li>
-                            <li><a className="transition-colors text-hover" href="#">Подготовка к экзамену</a></li>
+                            <li><a className="transition-colors hover:text-(--primary)" href="/">Главная</a></li>
+                            <li><a className="transition-colors hover:text-(--primary)" href="#">Как использовать</a></li>
+                            <li><a className="transition-colors hover:text-(--primary)" href="#">Подготовка к экзамену</a></li>
                         </ul>
                     </div>
                     <div className="space-y-4">
                         <h5 className="font-bold text-on-surface">Контакты</h5>
                         <div className="flex items-center gap-2 text-sm text-on-surface-variant">
-                            <IoIosCall className='text-color text-2xl' />
-                            <a className="transition-colors text-hover" href="tel:+996702247092">+996702 247 092</a>
+                            <IoIosCall className='text-(--primary) text-2xl' />
+                            <a className="transition-colors hover:text-(--primary)" href="tel:+996702247092">+996702 247 092</a>
                         </div>
                     </div>
                     <div className="flex items-end md:justify-end">
-                        <div className="p-3 rounded-xl flex items-center gap-3 bacground-color">
-                            <MdVerifiedUser className='text-color text-2xl' />
-                            <span className="text-xs font-bold text-color uppercase tracking-wider">Надёжное обучение</span>
+                        <div className="p-3 rounded-xl flex items-center gap-3 bg-(--primary)/5">
+                            <MdVerifiedUser className='text-(--primary) text-2xl' />
+                            <span className="text-xs font-bold text-(--primary) uppercase tracking-wider">Надёжное обучение</span>
                         </div>
                     </div>
                 </div>

@@ -1,21 +1,8 @@
 import { useState } from 'react'
 import { IoMdSearch, IoMdTrendingUp } from 'react-icons/io'
-
-import Dropdown from '../components/common/Dropdown'
 import { LuChevronLeft, LuChevronRight } from 'react-icons/lu'
 
-const student_page = [
-    {
-        path: "/table",
-        title: "Аналитика успеваемости",
-        text: "Подробный анализ прогресса студентов и результатов экзаменов."
-    },
-    {
-        path: "/leaderboard",
-        title: "Лидеры студентов",
-        text: "Подробный анализ лучших студентов, их достижений и стабильных высоких результатов в обучении."
-    }
-]
+import Dropdown from '../components/common/Dropdown'
 
 const StudentPage = () => {
     const [group, setGroup] = useState('')

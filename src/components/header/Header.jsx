@@ -75,7 +75,7 @@ const Header = () => {
                             +996 702 247 092
                         </a>
 
-                        <button onClick={toggleMenu} className="w-full text-white py-3 rounded-2xl font-bold button-primary">
+                        <button onClick={toggleMenu} className="w-full py-3 rounded-2xl font-bold bg-(--primary) text-(--on-primary)">
                             Пройти тест
                         </button>
                     </div>

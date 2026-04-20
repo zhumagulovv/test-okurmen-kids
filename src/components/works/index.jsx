@@ -5,12 +5,12 @@ const HowItWorks = () => {
         <section className="max-w-7xl mx-auto w-full px-6 mb-16" >
             <div className="text-center space-y-8">
                 <div className="space-y-2">
-                    <h3 className="text-3xl font-bold font-headline text-color-two">Как это работает</h3>
-                    <p className="text-color-three max-w-lg mx-auto">Впервые на платформе? Посмотрите это краткое руководство, чтобы начать работу.</p>
+                    <h3 className="text-3xl font-bold font-headline text-(--on-surface)">Как это работает</h3>
+                    <p className="text-(--on-surface-variant) max-w-lg mx-auto">Впервые на платформе? Посмотрите это краткое руководство, чтобы начать работу.</p>
                 </div>
                 <div className="max-w-4xl mx-auto relative group">
                     <div
-                        className="relative aspect-video rounded-2xl overflow-hidden shadow-xl border-4 border-first cursor-pointer">
+                        className="relative aspect-video rounded-2xl overflow-hidden shadow-xl border-4 borde-(--surface-container-highest) cursor-pointer">
                         <img alt="Platform Guide Thumbnail"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             data-alt="A friendly 3D robot instructor pointing at a laptop screen with a bright digital interface, welcoming classroom environment in background, Pixar style, soft lighting"
@@ -18,21 +18,21 @@ const HowItWorks = () => {
                         <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent"></div>
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                             <div
-                                className="w-20 h-20 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:bg-primary transition-all duration-300 forth-background">
+                                className="w-20 h-20 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:bg-primary transition-all duration-300 bg-(--primary)/90">
                                 <TbPlayerPlay />
                             </div>
                             <span
-                                className="bg-white/90 backdrop-blur-md px-6 py-2 rounded-full text-color font-bold shadow-lg transform group-hover:-translate-y-1 transition-all">Воспроизвести видео</span>
+                                className="bg-white/90 backdrop-blur-md px-6 py-2 rounded-full text-(--primary) font-bold shadow-lg transform group-hover:-translate-y-1 transition-all">Воспроизвести видео</span>
                         </div>
                     </div>
                     <div
-                        className="absolute -top-4 -right-4 w-12 h-12 bacground-color-first rounded-full blur-sm opacity-50 -z-10">
+                        className="absolute -top-4 -right-4 w-12 h-12 bg-(--primary-container) rounded-full blur-sm opacity-50 -z-10">
                     </div>
                     <div
-                        className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full blur-sm opacity-50 -z-10 bacground-color-first">
+                        className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full blur-sm opacity-50 -z-10 bg-(--primary-container)">
                     </div>
                 </div>
-                <p className="text-sm text-color-three italic max-w-md mx-auto">
+                <p className="text-sm text-(--on-surface-variant) italic max-w-md mx-auto">
                     Это 2-минутное видео проведёт вас через ввод кода сессии, интерфейс экзамена и процесс отправки финальных ответов.
                 </p>
             </div>

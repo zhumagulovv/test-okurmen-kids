@@ -1,37 +1,8 @@
 import { useEffect, useState } from 'react'
-import { BsCss } from 'react-icons/bs';
-import { IoLogoJavascript } from 'react-icons/io';
-import { MdTerminal } from 'react-icons/md';
-import { TiHtml5 } from 'react-icons/ti';
+
 import CodeEditor from './CodeEditor';
 
-const TABS = [
-    { id: 'html', label: 'index.html', Icon: TiHtml5 },
-    { id: 'css', label: 'styles.css', Icon: BsCss },
-    { id: 'js', label: 'script.js', Icon: IoLogoJavascript },
-    { id: 'py', label: 'verify.py', Icon: MdTerminal },
-];
-
-const LANG_MAP = {
-    html: 'html',
-    css: 'css',
-    js: 'javascript',
-    py: 'python',
-};
-
-const ENABLED_TABS = {
-    python: ['py'],
-    js: ['js'],
-    layout: ['html', 'css'],
-    fullstack: ['html', 'css', 'js'],
-};
-
-const DEFAULT_CODE = {
-    html: '<h1>Hello World</h1>',
-    css: 'h1 { color: red; }',
-    js: 'console.log("Hello World");',
-    py: 'print("Hello World")',
-};
+import { TABS, LANG_MAP, ENABLED_TABS, DEFAULT_CODE } from '../../constants/constants';
 
 const CodeAnswer = ({ language, value, onChange }) => {
     const questionType = language || 'fullstack';
