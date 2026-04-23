@@ -22,17 +22,22 @@ import {
 import { fetchResult, finishAttempt, submitAnswer } from '../features/attempt/attemptSlice'
 
 import { BLOCKED_COMBINATIONS } from '../constants/constants'
+
 import { useMatchHotkey } from '../hooks/useMatchHotkey'
+
 import { normalizeLanguage } from '../helpers/normalizeLanguage'
 import { formatTime } from '../helpers/formatTime'
+import buildAnswerPayload from '../helpers/buildAnswerPayload'
+
 import logoImage from '../assets/logo.png'
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const EXAM_DURATION_SECONDS = 40 * 60   // 2400 s — strict limit
-const URGENT_THRESHOLD = 5 * 60   // last 5 min → timer turns red
+const EXAM_DURATION_SECONDS = 40 * 60  
+const URGENT_THRESHOLD = 5 * 60   
 
 const QUESTION_COMPONENTS = {
     single_choice: SingleChoice,
@@ -41,49 +46,6 @@ const QUESTION_COMPONENTS = {
     text: TextAnswer,
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Pure helper — no component deps, safe to call from anywhere
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Build the submit payload for one question.
- * Returns null when the question is unanswered so callers can filter it out.
- */
-const buildAnswerPayload = (question, answers, attemptId, index) => {
-    const answer = answers[index]
-    const isEmpty =
-        answer === undefined ||
-        answer === null ||
-        answer === '' ||
-        (Array.isArray(answer) && answer.length === 0)
-
-    if (isEmpty) return null
-
-    const base = { attempt_id: attemptId, question_id: question.id }
-
-    switch (question.question_type) {
-        case 'single_choice': {
-            const optionId = question.options[answer]?.id
-            return { ...base, selected_options: [optionId] }
-        }
-        case 'multiple_choice':
-            return { ...base, selected_options: Array.isArray(answer) ? answer : [answer] }
-        case 'text':
-            return { ...base, answer_text: answer }
-        case 'code':
-            return {
-                ...base,
-                answer_text: typeof answer === 'object' ? JSON.stringify(answer) : answer,
-            }
-        default:
-            return null
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────────────────────────────────────
-
 const TestPage = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -91,15 +53,9 @@ const TestPage = () => {
     const { currentIndex, elapsed, answers } = useSelector((s) => s.quiz)
     const { questions, current } = useSelector((s) => s.attempt)
 
-    // Controls whether the router blocker is active.
-    // Set to false just before navigating so the blocker doesn't re-intercept
-    // our own programmatic navigation to /result-page.
     const [isExamActive, setIsExamActive] = useState(true)
 
-    // ── Refs: always-current snapshots safe inside stale async closures ──────
-    // A ref never causes a re-render and is always in sync — perfect for values
-    // read inside event listeners, timeouts, and async continuations.
-    const isFinishingRef = useRef(false)   // ← the single-execution lock
+    const isFinishingRef = useRef(false)
     const answersRef = useRef(answers)
     const questionsRef = useRef(questions)
     const currentRef = useRef(current)
@@ -110,30 +66,15 @@ const TestPage = () => {
     useEffect(() => { currentRef.current = current }, [current])
     useEffect(() => { isExamActiveRef.current = isExamActive }, [isExamActive])
 
-    // ── Derived ──────────────────────────────────────────────────────────────
     const total = questions.length
-    const isLastQuestion = total > 0 && currentIndex === total - 1  // ① gate for submit button
+    const isLastQuestion = total > 0 && currentIndex === total - 1
     const progress = total ? Math.round(((currentIndex + 1) / total) * 100) : 0
     const question = questions[currentIndex]
     const normalizedLanguage = normalizeLanguage(question?.language)
     const timerIsUrgent = elapsed >= EXAM_DURATION_SECONDS - URGENT_THRESHOLD
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // ③ Core finish flow — THE single source of truth for ending an attempt
-    // ─────────────────────────────────────────────────────────────────────────
-    //
-    // Design decisions:
-    //   • Reads everything from refs so it's race-condition-safe in any async
-    //     context (visibility handler, blocker effect, timer effect).
-    //   • The isFinishingRef lock ensures it executes at most once, no matter
-    //     how many triggers fire simultaneously (tab switch + timer + blocker).
-    //   • On failure the lock is released so the user can retry manually.
-    //   • On success the lock stays true — all subsequent triggers are no-ops.
-    //   • Does NOT navigate — callers own the navigation decision.
-    //
     const finishExamFlow = useCallback(async () => {
-        // ── LOCK ─────────────────────────────────────────────────────────────
-        if (isFinishingRef.current) return null   // already running or done → bail
+        if (isFinishingRef.current) return null
         isFinishingRef.current = true
 
         try {
@@ -144,7 +85,6 @@ const TestPage = () => {
             const attemptId = snapshotCurrent?.id ?? snapshotCurrent?.attempt_id
             if (!attemptId) throw new Error('NO_ATTEMPT_ID')
 
-            // ── ① Submit all non-empty answers in parallel ────────────────
             const payloads = snapshotQuestions
                 .map((q, i) => buildAnswerPayload(q, snapshotAnswers, attemptId, i))
                 .filter(Boolean)
@@ -153,31 +93,20 @@ const TestPage = () => {
                 payloads.map((payload) => dispatch(submitAnswer(payload)).unwrap())
             )
 
-            // ── ② Finish the attempt ──────────────────────────────────────
             await dispatch(finishAttempt(attemptId)).unwrap()
 
-            // ── ③ Pre-fetch result so /result-page renders immediately ────
             await dispatch(fetchResult(attemptId)).unwrap()
 
-            // Deactivate blocker BEFORE navigating so our own navigation
-            // doesn't get intercepted by the useBlocker below.
             setIsExamActive(false)
 
             return attemptId
 
         } catch (err) {
-            // Release the lock so the user can retry on manual submit
             isFinishingRef.current = false
             throw err
         }
-        // On success: lock stays true. Every subsequent trigger is a no-op.
-    }, [dispatch])   // stable — all live data comes from refs
+    }, [dispatch])
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Public handlers — thin wrappers that own navigation / error reporting
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /** ① Manual submit button on the last question */
     const handleFinish = useCallback(async () => {
         try {
             await finishExamFlow()
@@ -188,10 +117,6 @@ const TestPage = () => {
         }
     }, [finishExamFlow, navigate])
 
-    /**
-     * Automatic triggers (tab switch, beforeunload, timer, blocker).
-     * Swallows errors — the specific trigger decides what to do next.
-     */
     const handleAutoFinish = useCallback(async () => {
         try {
             await finishExamFlow()
@@ -200,25 +125,13 @@ const TestPage = () => {
         }
     }, [finishExamFlow])
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // ② Timer auto-finish — fires exactly once at the 2400-second mark
-    // ─────────────────────────────────────────────────────────────────────────
-    //
-    // This effect re-runs every second (elapsed changes via incrementTimer).
-    // The early returns make it a near-zero-cost no-op on the first 2399 ticks.
-    // At tick 2400 it finishes the exam and navigates.
-    //
     useEffect(() => {
         if (elapsed < EXAM_DURATION_SECONDS) return   // not yet
         if (!isExamActiveRef.current) return          // already finished
 
-        // Time's up — finish silently and redirect
         handleAutoFinish().then(() => navigate('/result-page'))
     }, [elapsed, handleAutoFinish, navigate])
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // React Router blocker — intercepts programmatic + user navigation
-    // ─────────────────────────────────────────────────────────────────────────
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) =>
             isExamActive && currentLocation.pathname !== nextLocation.pathname
@@ -232,9 +145,6 @@ const TestPage = () => {
             .catch(() => blocker.reset())
     }, [blocker, handleAutoFinish])
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Global event listeners — mounted once, cleaned up on unmount
-    // ─────────────────────────────────────────────────────────────────────────
     useEffect(() => {
         dispatch(startTimer())
         const timerInterval = setInterval(() => dispatch(incrementTimer()), 1000)
@@ -247,17 +157,13 @@ const TestPage = () => {
         }
         document.addEventListener('visibilitychange', handleVisibilityChange)
 
-        // B) Page unload — best-effort async + native dialog
-        //    The browser may kill the async flow before it completes;
-        //    this is a known limitation without a dedicated beacon endpoint.
         const handleBeforeUnload = (e) => {
             e.preventDefault()
-            e.returnValue = ''   // triggers native "Leave site?" dialog
+            e.returnValue = ''
             handleAutoFinish().catch(() => { })
         }
         window.addEventListener('beforeunload', handleBeforeUnload)
 
-        // C) Block Ctrl+R, F5, etc.
         const preventRefresh = (e) => {
             if (BLOCKED_COMBINATIONS.some((combo) => useMatchHotkey(e, combo))) {
                 e.preventDefault()
@@ -265,7 +171,6 @@ const TestPage = () => {
         }
         window.addEventListener('keydown', preventRefresh)
 
-        // D) Clipboard lock
         const noop = (e) => e.preventDefault()
         document.addEventListener('copy', noop)
         document.addEventListener('paste', noop)
@@ -281,20 +186,12 @@ const TestPage = () => {
             document.removeEventListener('cut', noop)
         }
     }, [dispatch, handleAutoFinish, navigate])
-    // handleAutoFinish and navigate are stable (useCallback + stable deps),
-    // so this effect correctly runs only once on mount.
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Question component resolution
-    // ─────────────────────────────────────────────────────────────────────────
     const QuestionComponent =
         question?.question_type && QUESTION_COMPONENTS[question.question_type]
             ? QUESTION_COMPONENTS[question.question_type]
             : TextAnswer
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Render
-    // ─────────────────────────────────────────────────────────────────────────
     return (
         <section className="bg-(--surface-container-lowest) text-(--on-surface) min-h-screen flex flex-col">
 
@@ -327,13 +224,8 @@ const TestPage = () => {
                         </div>
                     </div>
 
-                    {/* Timer + conditional submit button */}
                     <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
 
-                        {/*
-                         * Timer — turns red + pulses in the final 5 minutes
-                         * so students get a visual warning before hard cutoff.
-                         */}
                         <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-colors duration-500
                             ${timerIsUrgent
                                 ? 'bg-(--error)/10 border-(--error)/30 animate-pulse'

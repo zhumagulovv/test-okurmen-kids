@@ -1,17 +1,19 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import { lazy, Suspense } from "react"
 
+import { Loading } from "./components/common/loading"
 import MainLayout from "./components/layout/MainLayout"
-
-import HomePage from "./pages/HomePage"
-import LiderBortPage from "./pages/LiderBortPage"
-import EntryPage from "./pages/EntryPage"
-import NamePage from "./pages/NamePage"
-import TestPage from "./pages/TestPage"
-import ResultPage from "./pages/ResultPage"
-import ProtectedRoute from "./ProtectedRoute"
 import TestLayout from "./components/layout/TestLayout"
-import AppInt from "./AppInt"
 
+const EntryPage = lazy(() => import("./pages/EntryPage"))
+const HomePage = lazy(() => import("./pages/HomePage"))
+const LiderBortPage = lazy(() => import("./pages/LiderBortPage"))
+const NamePage = lazy(() => import("./pages/NamePage"))
+const TestPage = lazy(() => import("./pages/TestPage"))
+const ResultPage = lazy(() => import("./pages/ResultPage"))
+
+import ProtectedRoute from "./ProtectedRoute"
+import AppInt from "./AppInt"
 
 const routes = createBrowserRouter([
   {
@@ -55,7 +57,9 @@ function App() {
   return (
     <>
       <AppInt />
-      <RouterProvider router={routes} />
+      <Suspense fallback={<Loading />}>
+        <RouterProvider router={routes} />
+      </Suspense>
     </>
   )
 }

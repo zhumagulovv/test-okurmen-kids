@@ -1,5 +1,4 @@
 import { RxAvatar } from "react-icons/rx"
-import { STATUS_LABELS, STATUS_STYLES } from "../../constants/constants"
 import StatusBadge from "./StatusBadge"
 
 // ─── Student card ──────────────────────────────────────────────────────────────
