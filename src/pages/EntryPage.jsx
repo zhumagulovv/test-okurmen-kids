@@ -8,6 +8,7 @@ import { MdClose, MdHelpOutline, MdOutlineVerifiedUser } from 'react-icons/md'
 import { validateSession } from '../features/auth/sessionSlice'
 
 import logoImage from '../assets/logo.png'
+import Button from '../shared/ui/Button'
 
 const EntryPage = () => {
     const [code, setCode] = useState('')
@@ -63,13 +64,15 @@ const EntryPage = () => {
                                 className="absolute inset-0 rounded-xl pointer-events-none border-2 border-(--primary)/0 group-focus-within:(--primary)transition-all">
                             </div>
                         </div>
-                        <button
+                        <Button
                             onClick={handleSubmit}
-                            disabled={loading}
-                            className="w-full bg-linear-to-r from-(--primary) to-(--primary-container) font-headline font-bold py-5 rounded-xl shadow-lg hover:shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-base text-(--on-primary) sm:text-xs md:text-sm lg:text-base">
-                            {loading ? 'Проверка...' : 'Продолжить'}
-                            <FaArrowRight />
-                        </button>
+                            variant="gradient"
+                            loading={loading}
+                            loadingText="Проверка..."
+                            icon={<FaArrowRight />}
+                        >
+                            Продолжить
+                        </Button>
                     </div>
                     <div className="mt-10 pt-8 border-t-4 border-(--surface-container) w-full flex flex-col items-center gap-4">
                         <div className="flex items-start gap-2 text-(--on-surface-variant)/70 text-sm">

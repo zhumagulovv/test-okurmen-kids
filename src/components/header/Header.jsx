@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Button from '../../shared/ui/Button';
 
 let MENU_HEADER = [
     { id: 1, label: 'Главная', path: '/' },
@@ -49,9 +50,13 @@ const Header = () => {
                             +996 702 247 092
                         </a>
 
-                        <button onClick={() => navigate("/entry-page")} className="py-2 px-6 rounded-2xl font-bold shadow-[0_12px_24px_-8px_rgba(0,87,189,0.5)] hover:-translate-y-0.5 transition-all bg-(--primary) text-(--on-primary) cursor-pointer">
+                        <Button
+                            onClick={() => navigate("/entry-page")}
+                            size="sm"
+                            fullWidth={false}
+                        >
                             Пройти тест
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -74,9 +79,13 @@ const Header = () => {
                             +996 702 247 092
                         </a>
 
-                        <button onClick={toggleMenu} className="w-full py-3 rounded-2xl font-bold bg-(--primary) text-(--on-primary)">
+                        <Button
+                            onClick={toggleMenu}
+                            size="sm"
+                            fullWidth={false}
+                        >
                             Пройти тест
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}

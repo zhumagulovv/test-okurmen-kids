@@ -58,20 +58,6 @@ export const SORT_OPTIONS = [
     { value: 'name', label: 'По имени' },
 ]
 
-export const STATUS_STYLES = {
-    Completed: 'bg-green-100 text-green-700',
-    'In Progress': 'bg-blue-100 text-blue-700',
-    Pending: 'bg-yellow-100 text-yellow-700',
-    Review: 'bg-orange-100 text-orange-700',
-}
-
-export const STATUS_LABELS = {
-    Completed: 'Completed',
-    'In Progress': 'In Progress',
-    Pending: 'Pending',
-    Review: 'Требуется проверка',
-}
-
 export const TABS = [
     { id: 'html', label: 'index.html', Icon: TiHtml5 },
     { id: 'css', label: 'styles.css', Icon: BsCss },
@@ -104,17 +90,17 @@ export const SKILL_CATEGORIES = [
     {
         icon: TiHtml5,
         title: "HTML & CSS",
-        description: "12 модулей"
+        description: "Основы верстки"
     },
     {
         icon: IoLogoJavascript,
         title: "JavaScript",
-        description: "8 модулей"
+        description: "Логика и интерактив"
     },
     {
         icon: FaPython,
         title: "Python",
-        description: "15 модулей"
+        description: "Программирование с нуля"
     }
 ]
 

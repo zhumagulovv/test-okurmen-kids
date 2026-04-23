@@ -6,6 +6,7 @@ import { MdVerified } from 'react-icons/md'
 import { TbSchool } from 'react-icons/tb'
 
 import { HERO_INFO } from '../../constants/constants'
+import Button from '../../shared/ui/Button'
 
 const Hero = ({ scroollRef }) => {
     const navigate = useNavigate();
@@ -44,6 +45,7 @@ const Hero = ({ scroollRef }) => {
                                 const IconInfo = i.icon
                                 return (
                                     <div
+                                        key={i.id}
                                         className="flex items-center gap-4 bg-white/40 backdrop-blur-sm p-4 rounded-2xl border border-white/60 min-w-45">
                                         <div className="w-12 h-12 flex items-center justify-center bg-(--primary)/5 rounded-(--xl)">
                                             <IconInfo className='text-2xl text-(--primary)' />
@@ -66,18 +68,21 @@ const Hero = ({ scroollRef }) => {
                             <FaUserShield className='text-6xl' />
                         </div>
                         <div className="flex flex-col gap-4 relative z-10">
-                            <button
+                            <Button
                                 onClick={() => navigate("/entry-page")}
-                                className="w-full py-5 rounded-2xl font-bold text-md shadow-[0_12px_24px_-8px_rgba(0,87,189,0.5)] hover:shadow-[0_16px_32px_-8px_rgba(0,87,189,0.6)] hover:-translate-y-0.5 active:scale-[0.98] transition-all flex items-center justify-center gap-3 bg-(--primary) text-(--on-primary) cursor-pointer">
+                                size="lg"
+                                icon={<IoRocketSharp />}
+                            >
                                 Начать итоговый экзамен
-                                <IoRocketSharp />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 onClick={handleClick}
-                                className="w-full bg-white text-(--secondary) py-4 rounded-2xl font-bold text-md border-2 active:scale-[0.98] transition-all flex items-center justify-center gap-2 hover:border-(--secondary)/5 hover:bg-(--secondary)/5 cursor-pointer">
-                                <TbSchool className='text-2xl ' />
+                                variant="secondary"
+                                icon={<TbSchool className="text-2xl" />}
+                                iconPosition="left"
+                            >
                                 GO! в режим практики
-                            </button>
+                            </Button>
                         </div>
                         <div className="bg-surface-container-low/50 p-4 rounded-xl border border-primary/5">
                             <p className="text-center text-xs text-on-surface-variant leading-relaxed">

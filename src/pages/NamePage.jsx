@@ -9,6 +9,7 @@ import { startAttempt } from '../features/attempt/attemptSlice'
 import { clearSession } from '../features/auth/sessionSlice'
 
 import namePageImage from "../assets/namePage.png"
+import Button from '../shared/ui/Button'
 
 const NamePage = () => {
     const [name, setName] = useState('')
@@ -91,13 +92,17 @@ const NamePage = () => {
                                 </div>
                             </div>
                             <div className="pt-4">
-                                <button
-                                    disabled={attemptLoading || sessionLoading}
-                                    className="w-full bg-linear-to-r from-(--primary) to-(--primary-dim) text-white py-6 rounded-xl text-xl font-bold flex items-center justify-center gap-3 shadow-[0_12px_24px_rgba(0,87,189,0.2)] hover:shadow-[0_16px_32px_rgba(0,87,189,0.3)] transform hover:-translate-y-1 transition-all active:scale-95 duration-150"
-                                    type="submit">
-                                    {attemptLoading ? "Загрузка..." : "Начать"}
-                                    <IoRocketSharp className='text-2xl' />
-                                </button>
+                                <Button
+                                    type="submit"
+                                    variant="gradient"
+                                    size="lg"
+                                    loading={attemptLoading}
+                                    disabled={sessionLoading}
+                                    loadingText="Загрузка..."
+                                    icon={<IoRocketSharp className="text-2xl" />}
+                                >
+                                    Начать
+                                </Button>
                             </div>
                         </form>
                     </div>
