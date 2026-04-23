@@ -44,7 +44,7 @@ const EntryPage = () => {
                 <div
                     className="bg-surface-container-lowest rounded-xl p-8 md:p-12 shadow-[0_8px_24px_rgba(36,44,81,0.06)] flex flex-col items-center text-center">
                     <div className="mb-8 w-20 h-20 bg-surface-container-high rounded-full flex items-center justify-center">
-                        <img alt="Platform Logo" className="w-24 h-24 object-contain" src={logoImage} />
+                        <img alt="Platform Logo" className="w-24 h-24 object-contain" src={logoImage} loading='lazy' />
                     </div>
                     <h1 className="font-headline font-bold text-3xl md:text-4xl text-(--on-surface) mb-4 tracking-tight">Введите ключ сессии</h1>
                     <p className="text-(--on-surface-variant) text-lg leading-relaxed mb-10 max-w-sm">

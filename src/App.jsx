@@ -4,7 +4,6 @@ import MainLayout from "./components/layout/MainLayout"
 
 import HomePage from "./pages/HomePage"
 import LiderBortPage from "./pages/LiderBortPage"
-import TableResultPage from "./pages/TableResultPage"
 import EntryPage from "./pages/EntryPage"
 import NamePage from "./pages/NamePage"
 import TestPage from "./pages/TestPage"
@@ -21,7 +20,6 @@ const routes = createBrowserRouter([
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/leaderboard', element: <LiderBortPage /> },
-      { path: "/table", element: <TableResultPage /> },
     ]
   },
   {

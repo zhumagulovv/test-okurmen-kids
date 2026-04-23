@@ -14,7 +14,7 @@ const HowItWorks = () => {
                         <img alt="Platform Guide Thumbnail"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             data-alt="A friendly 3D robot instructor pointing at a laptop screen with a bright digital interface, welcoming classroom environment in background, Pixar style, soft lighting"
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUHLqn5RkxUQyqY3BuOIrMsNzn5gZpNarY1niXRtlA4UofFS30b0oIdHupEEfmLxtCOp4SKqJileNQnDlUh-TiyCChbx5O74cIpBwUy_RW6DU8ry3zEoI6Kpfpy-6scdOD-jAMmNf-LEzCDgLN1RM8XEJLMKOu2fZO-UGHEo_ew0RKcUylAE3SomS7IS5Vmxoc6okXWOeQAEtiTCje41LlCHLYCH7-gmXJqpuPRHIA6L-x2GHPtDuH3B5rbglDqgBNkzVfcnjqTE4" />
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUHLqn5RkxUQyqY3BuOIrMsNzn5gZpNarY1niXRtlA4UofFS30b0oIdHupEEfmLxtCOp4SKqJileNQnDlUh-TiyCChbx5O74cIpBwUy_RW6DU8ry3zEoI6Kpfpy-6scdOD-jAMmNf-LEzCDgLN1RM8XEJLMKOu2fZO-UGHEo_ew0RKcUylAE3SomS7IS5Vmxoc6okXWOeQAEtiTCje41LlCHLYCH7-gmXJqpuPRHIA6L-x2GHPtDuH3B5rbglDqgBNkzVfcnjqTE4" loading='lazy' />
                         <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent"></div>
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                             <div

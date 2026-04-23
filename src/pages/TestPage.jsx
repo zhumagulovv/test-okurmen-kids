@@ -361,7 +361,7 @@ const TestPage = () => {
                     <div className="bg-(--surface-container-low) p-6 rounded-(--xl)">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="w-12 h-12 rounded-lg flex items-center justify-center">
-                                <img src={logoImage} alt="" />
+                                <img src={logoImage} alt="logo" loading='lazy' />
                             </div>
                             <span className="text-(--on-surface) font-headline font-black text-xl tracking-tight">
                                 Okurmen Kids

@@ -76,6 +76,7 @@ export default function ProCarousel() {
                                 src={slide.image}
                                 alt={slide.title}
                                 className="w-36 md:w-52 h-36 md:h-52 object-contain"
+                                loading="lazy"
                             />
                         </div>
                     </div>

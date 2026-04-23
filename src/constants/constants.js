@@ -1,11 +1,12 @@
 import { FiUsers, FiZap } from 'react-icons/fi'
 import { LuMedal } from 'react-icons/lu'
-import { RiVipCrownLine } from 'react-icons/ri'
+import { RiTimerLine, RiVipCrownLine } from 'react-icons/ri'
 import { BsCss } from 'react-icons/bs';
 import { IoLogoJavascript } from 'react-icons/io';
 import { MdTerminal } from 'react-icons/md';
 import { TiHtml5 } from 'react-icons/ti';
 import { FaPython } from 'react-icons/fa'
+import { BiTerminal } from 'react-icons/bi';
 
 import HTMLCSS from "../assets/html.png"
 import JS from "../assets/js.png"
@@ -114,5 +115,20 @@ export const SKILL_CATEGORIES = [
         icon: FaPython,
         title: "Python",
         description: "15 модулей"
+    }
+]
+
+export const HERO_INFO = [
+    {
+        id: 1,
+        icon: RiTimerLine,
+        title: "30 минут",
+        desc: "Сеанс с ограничением по времени"
+    },
+    {
+        id: 2,
+        icon: BiTerminal,
+        title: "Живое кодирование",
+        desc: "IDE в реальном времени"
     }
 ]

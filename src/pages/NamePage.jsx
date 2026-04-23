@@ -8,6 +8,8 @@ import { MdHelpOutline, MdOutlineCategory, MdOutlinePolyline, MdOutlineSettingsE
 import { startAttempt } from '../features/attempt/attemptSlice'
 import { clearSession } from '../features/auth/sessionSlice'
 
+import namePageImage from "../assets/namePage.png"
+
 const NamePage = () => {
     const [name, setName] = useState('')
     const dispatch = useDispatch()
@@ -22,7 +24,7 @@ const NamePage = () => {
         }
     }, [dispatch, navigate, session])
 
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         if (!name.trim()) return
         if (name.length < 3) return
@@ -55,7 +57,7 @@ const NamePage = () => {
                         </div>
                         <img alt="Friendly robot mascot" className="w-full h-full object-contain relative z-10"
                             data-alt="A friendly, cute 3D robot character with a large screen face showing a smiling emoji, vibrant blue and purple accents"
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHSJFZ4qmuktJsU3Dyc0IsFNk1DFF2QEEpgrFd-buBYLyA5REjYlxHfTYwcaDKn9usL6f8x0NNNdIWhQD2FE4hINN0bpvqei8td3o0f_P363CKLeLHu9deR4CiV5leYGrk2Y0x0RvR834ayS6eQUoDvWk5DK6oEAiteLoD7XBtoyv9F__xQUZxorFl0qF-JQMZQf68_uNlFeXDfD7SAg5IaFnue-ROEfJWDhiIU5B7wGWy8xqX_UmOZ91mjnVbTUPKZNKQpgBbRU4" />
+                            src={namePageImage} loading='lazy' />
                     </div>
                     <div className="space-y-2">
                         <h1 className="text-4xl md:text-5xl font-extrabold text-(--on-surface) tracking-tight leading-tight">

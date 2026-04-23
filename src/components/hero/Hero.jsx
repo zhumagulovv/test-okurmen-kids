@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom'
 
-import { BiTerminal } from 'react-icons/bi'
 import { FaUserShield } from 'react-icons/fa'
 import { IoRocketSharp } from 'react-icons/io5'
 import { MdVerified } from 'react-icons/md'
-import { RiTimerLine } from 'react-icons/ri'
 import { TbSchool } from 'react-icons/tb'
+
+import { HERO_INFO } from '../../constants/constants'
 
 const Hero = ({ scroollRef }) => {
     const navigate = useNavigate();
@@ -39,26 +39,24 @@ const Hero = ({ scroollRef }) => {
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-6">
-                        <div
-                            className="flex items-center gap-4 bg-white/40 backdrop-blur-sm p-4 rounded-2xl border border-white/60 min-w-45">
-                            <div className="w-12 h-12 flex items-center justify-center bg-(--primary)/5 rounded-(--xl)">
-                                <RiTimerLine className='text-2xl text-(--primary)' />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-(--on-surface) leading-none">30 минут</h4>
-                                <p className="text-xs text-(--on-surface-variant) mt-1">Сеанс с ограничением по времени</p>
-                            </div>
-                        </div>
-                        <div
-                            className="flex items-center gap-4 bg-white/40 backdrop-blur-sm p-4 rounded-2xl border border-white/60 min-w-45">
-                            <div className="w-12 h-12 rounded-4xl flex items-center justify-center bg-(--secondary)/10">
-                                <BiTerminal className='text-2xl text-(--primary)' />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-(--on-surface) leading-none">Живое кодирование</h4>
-                                <p className="text-xs text-(--on-surface-variant) mt-1">IDE в реальном времени</p>
-                            </div>
-                        </div>
+                        {
+                            HERO_INFO.map((i) => {
+                                const IconInfo = i.icon
+                                return (
+                                    <div
+                                        className="flex items-center gap-4 bg-white/40 backdrop-blur-sm p-4 rounded-2xl border border-white/60 min-w-45">
+                                        <div className="w-12 h-12 flex items-center justify-center bg-(--primary)/5 rounded-(--xl)">
+                                            <IconInfo className='text-2xl text-(--primary)' />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-(--on-surface) leading-none">{i.title}</h4>
+                                            <p className="text-xs text-(--on-surface-variant) mt-1">{i.desc}</p>
+                                        </div>
+                                    </div>
+                                )
+                            }
+                            )
+                        }
                     </div>
                 </div>
                 <div className="lg:col-span-5">
