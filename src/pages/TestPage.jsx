@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useBlocker, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import { MdOutlineTaskAlt } from 'react-icons/md'
@@ -23,11 +23,15 @@ import { fetchResult, finishAttempt, submitAnswer } from '../features/attempt/at
 
 import { BLOCKED_COMBINATIONS } from '../constants/constants'
 
-import { useMatchHotkey } from '../hooks/useMatchHotkey'
+// ✅ FIX: matchHotkey is a plain utility, NOT a hook — renamed to avoid Rules of Hooks violation
+import { matchHotkey } from '../helpers/matchHotkey'
 
 import { normalizeLanguage } from '../helpers/normalizeLanguage'
 import { formatTime } from '../helpers/formatTime'
 import buildAnswerPayload from '../helpers/buildAnswerPayload'
+
+// ✅ NEW: useExamGuard — blocks browser back/forward during exam
+import { useExamGuard } from '../hooks/useExamguard'
 
 import logoImage from '../assets/logo.png'
 
@@ -36,8 +40,8 @@ import logoImage from '../assets/logo.png'
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const EXAM_DURATION_SECONDS = 40 * 60  
-const URGENT_THRESHOLD = 5 * 60   
+const EXAM_DURATION_SECONDS = 40 * 60
+const URGENT_THRESHOLD = 5 * 60
 
 const QUESTION_COMPONENTS = {
     single_choice: SingleChoice,
@@ -53,6 +57,7 @@ const TestPage = () => {
     const { currentIndex, elapsed, answers } = useSelector((s) => s.quiz)
     const { questions, current } = useSelector((s) => s.attempt)
 
+    // ✅ isExamActive controls both useBlocker replacement and useExamGuard
     const [isExamActive, setIsExamActive] = useState(true)
 
     const isFinishingRef = useRef(false)
@@ -73,6 +78,23 @@ const TestPage = () => {
     const normalizedLanguage = normalizeLanguage(question?.language)
     const timerIsUrgent = elapsed >= EXAM_DURATION_SECONDS - URGENT_THRESHOLD
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // ✅ NEW: useExamGuard integration
+    // Blocks browser back/forward buttons for the entire exam session.
+    // releaseGuard() is called before any intentional navigation (finish/auto-finish).
+    // ─────────────────────────────────────────────────────────────────────────
+    const { releaseGuard } = useExamGuard({
+        isActive: isExamActive,
+        onIntercepted: () => {
+            // Optional: you can show a toast/alert here when back is blocked
+            // e.g. toast.warn('Нельзя использовать кнопки браузера во время экзамена')
+            console.warn('[ExamGuard] Browser navigation blocked during exam')
+        },
+    })
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Core finish flow — submit all answers → finish → fetch result
+    // ─────────────────────────────────────────────────────────────────────────
     const finishExamFlow = useCallback(async () => {
         if (isFinishingRef.current) return null
         isFinishingRef.current = true
@@ -94,19 +116,22 @@ const TestPage = () => {
             )
 
             await dispatch(finishAttempt(attemptId)).unwrap()
-
             await dispatch(fetchResult(attemptId)).unwrap()
 
+            // ✅ Disable guard BEFORE navigating — allows intentional navigation
+            releaseGuard()
             setIsExamActive(false)
 
             return attemptId
-
         } catch (err) {
             isFinishingRef.current = false
             throw err
         }
-    }, [dispatch])
+    }, [dispatch, releaseGuard])
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Manual finish (Submit button)
+    // ─────────────────────────────────────────────────────────────────────────
     const handleFinish = useCallback(async () => {
         try {
             await finishExamFlow()
@@ -117,6 +142,9 @@ const TestPage = () => {
         }
     }, [finishExamFlow, navigate])
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Auto finish (timer expiry, tab switch)
+    // ─────────────────────────────────────────────────────────────────────────
     const handleAutoFinish = useCallback(async () => {
         try {
             await finishExamFlow()
@@ -125,38 +153,35 @@ const TestPage = () => {
         }
     }, [finishExamFlow])
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Timer expiry → auto finish
+    // ✅ FIX: separated into its own useEffect with only [elapsed] as dependency
+    // ─────────────────────────────────────────────────────────────────────────
     useEffect(() => {
-        if (elapsed < EXAM_DURATION_SECONDS) return   // not yet
-        if (!isExamActiveRef.current) return          // already finished
+        if (elapsed < EXAM_DURATION_SECONDS) return
+        if (!isExamActiveRef.current) return
 
         handleAutoFinish().then(() => navigate('/result-page'))
-    }, [elapsed, handleAutoFinish, navigate])
+    }, [elapsed]) // eslint-disable-line react-hooks/exhaustive-deps
 
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            isExamActive && currentLocation.pathname !== nextLocation.pathname
-    )
-
-    useEffect(() => {
-        if (blocker.state !== 'blocked') return
-
-        handleAutoFinish()
-            .then(() => blocker.proceed())
-            .catch(() => blocker.reset())
-    }, [blocker, handleAutoFinish])
-
+    // ─────────────────────────────────────────────────────────────────────────
+    // ✅ FIX: Timer + event listeners in ONE effect, mounted once
+    // Separated from auto-finish effect to avoid re-registering listeners
+    // ─────────────────────────────────────────────────────────────────────────
     useEffect(() => {
         dispatch(startTimer())
         const timerInterval = setInterval(() => dispatch(incrementTimer()), 1000)
 
-        // A) Tab hidden → auto-finish + redirect
+        // Tab hidden → auto-finish + redirect
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'hidden') {
+            if (document.visibilityState === 'hidden' && isExamActiveRef.current) {
                 handleAutoFinish().then(() => navigate('/result-page'))
             }
         }
         document.addEventListener('visibilitychange', handleVisibilityChange)
 
+        // beforeunload is already handled by useExamGuard — but we still need
+        // to attempt saving here as a best-effort before the page unloads
         const handleBeforeUnload = (e) => {
             e.preventDefault()
             e.returnValue = ''
@@ -164,12 +189,13 @@ const TestPage = () => {
         }
         window.addEventListener('beforeunload', handleBeforeUnload)
 
-        const preventRefresh = (e) => {
-            if (BLOCKED_COMBINATIONS.some((combo) => useMatchHotkey(e, combo))) {
+        // ✅ FIX: matchHotkey is now a plain function, not a hook — safe inside useEffect
+        const preventHotkeys = (e) => {
+            if (BLOCKED_COMBINATIONS.some((combo) => matchHotkey(e, combo))) {
                 e.preventDefault()
             }
         }
-        window.addEventListener('keydown', preventRefresh)
+        window.addEventListener('keydown', preventHotkeys)
 
         const noop = (e) => e.preventDefault()
         document.addEventListener('copy', noop)
@@ -180,12 +206,13 @@ const TestPage = () => {
             clearInterval(timerInterval)
             document.removeEventListener('visibilitychange', handleVisibilityChange)
             window.removeEventListener('beforeunload', handleBeforeUnload)
-            window.removeEventListener('keydown', preventRefresh)
+            window.removeEventListener('keydown', preventHotkeys)
             document.removeEventListener('copy', noop)
             document.removeEventListener('paste', noop)
             document.removeEventListener('cut', noop)
         }
-    }, [dispatch, handleAutoFinish, navigate])
+    }, [dispatch]) // eslint-disable-line react-hooks/exhaustive-deps
+    // ↑ Only [dispatch] — stable reference, effect runs once on mount
 
     const QuestionComponent =
         question?.question_type && QUESTION_COMPONENTS[question.question_type]
@@ -199,7 +226,6 @@ const TestPage = () => {
             <header className="w-full relative top-0 z-50 bg-(--surface-container-lowest) px-4 md:px-6 py-4">
                 <div className="max-w-382.5 mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
 
-                    {/* Progress label */}
                     <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <span className="text-(--on-surface-variant) font-label text-xs uppercase tracking-widest mb-1">
                             Текущий прогресс
@@ -214,7 +240,6 @@ const TestPage = () => {
                         </div>
                     </div>
 
-                    {/* Progress bar */}
                     <div className="w-full md:flex-1 md:px-6 order-3 md:order-0">
                         <div className="h-2 w-full bg-(--surface-container-high) rounded-full overflow-hidden">
                             <div
@@ -225,7 +250,6 @@ const TestPage = () => {
                     </div>
 
                     <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-
                         <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-colors duration-500
                             ${timerIsUrgent
                                 ? 'bg-(--error)/10 border-(--error)/30 animate-pulse'
@@ -343,8 +367,6 @@ const TestPage = () => {
 
                     {/* ── Navigation footer ── */}
                     <footer className="flex items-center justify-between gap-4 bg-(--surface-container-low) p-6 rounded-(--xl) w-full">
-
-                        {/* Prev — disabled on first question */}
                         <button
                             onClick={() => dispatch(prevQuestion())}
                             disabled={currentIndex === 0}
@@ -353,6 +375,7 @@ const TestPage = () => {
                             <FaChevronLeft />
                             Предыдущий
                         </button>
+
                         {isLastQuestion ? (
                             <button
                                 onClick={handleFinish}

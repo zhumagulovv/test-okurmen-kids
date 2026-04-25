@@ -8,7 +8,7 @@ const ProtectedRoute = ({ children }) => {
     if (loading) return <Loading />
 
     if (!data) {
-        return <Navigate to="/entry-page" replace />
+        return <Navigate to="/" replace />
     }
 
     return children

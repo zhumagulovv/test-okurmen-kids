@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { incrementTimer, startTimer, stopTimer, resetTimer } from '../features/quiz/quizSlice';
+import { incrementTimer, startTimer, stopTimer, resetQuiz } from '../features/quiz/quizSlice';
 
 export const useTimer = () => {
   const dispatch = useDispatch();
@@ -12,13 +12,15 @@ export const useTimer = () => {
       dispatch(startTimer())
     }
   };
+
   const stop = () => {
     if (isRunning) {
       dispatch(stopTimer())
     }
   };
+
   const reset = () => {
-    dispatch(resetTimer())
+    dispatch(resetQuiz())
   };
 
   useEffect(() => {

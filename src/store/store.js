@@ -3,10 +3,8 @@ import { configureStore } from "@reduxjs/toolkit";
 import attemptReducer from "../features/attempt/attemptSlice"
 import leaderboardReducer from "../features/leaderboard/leaderboardSlice"
 import quizReducer from "../features/quiz/quizSlice"
-import resultTableReducer from "../features/resultTable/resultTableSlice"
 import sessionReducer from "../features/auth/sessionSlice"
 import sessionIdReducer from "../features/sessionId/sessionIdSlice"
-import testsReducer from "../features/tests/testsSlice"
 import trainingSessionReducer from "../features/training/TrainingSessionSlice"
 
 export const store = configureStore({
@@ -16,8 +14,6 @@ export const store = configureStore({
         attempt: attemptReducer,
         quiz: quizReducer,
         leaderboard: leaderboardReducer,
-        result: resultTableReducer,
-        tests: testsReducer,
         trainingSession: trainingSessionReducer,
     },
     middleware: (getDefaultMiddleware) =>

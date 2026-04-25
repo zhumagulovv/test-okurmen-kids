@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import { lazy, Suspense } from "react"
+import { lazy, Suspense, useEffect } from "react"
 
 import { Loading } from "./components/common/loading"
 import MainLayout from "./components/layout/MainLayout"

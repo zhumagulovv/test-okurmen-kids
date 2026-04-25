@@ -43,10 +43,11 @@ const ResultPage = () => {
 
     // --- Derive display values from result ---
     // Adjust field names below to match your actual API response shape
-    const total = result.answers.length ?? 0
-    const correct = result.answers.filter(a => a.is_correct === true).length ?? 0
-    const wrong = result.answers.filter(a => a.is_correct === false).length ?? 0
-    const pending = result.answers.filter(a => a.grading_status === "processing").length ?? 0
+    const answers = result.answers ?? []
+    const total = answers.length
+    const correct = answers.filter(a => a.is_correct === true).length ?? 0
+    const wrong = answers.filter(a => a.is_correct === false).length ?? 0
+    const pending = answers.filter(a => a.grading_status === "processing").length ?? 0
 
     // Circular SVG progress maths (r = 45% of viewBox = ~126 for 280px circle)
     const RADIUS = 45          // percent-based radius used in the SVG

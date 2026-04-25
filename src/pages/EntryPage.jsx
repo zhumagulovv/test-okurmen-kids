@@ -12,6 +12,7 @@ import Button from '../shared/ui/Button'
 
 const EntryPage = () => {
     const [code, setCode] = useState('')
+    const [localError, setLocalError] = useState('')
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
@@ -20,8 +21,11 @@ const EntryPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (!code.trim()) {
-            throw new Error('Пожалуйста, введите ключ сессии')
+            setLocalError('Пожалуйста, введите ключ сессии')
+            return
         }
+
+        setLocalError('')
 
         localStorage.setItem('sessionKey', code)
 

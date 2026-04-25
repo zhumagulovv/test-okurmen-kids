@@ -110,19 +110,19 @@ const attemptSlice = createSlice({
                 state.answers[question_id].grading_status = grading_status;
             })
             .addCase(submitAnswer.rejected, (state, action) => {
-                throw new Error('submitAnswer failed:', action.payload);
+                state.error = action.payload ?? 'Ошибка отправки ответа'
             })
             .addCase(finishAttempt.fulfilled, (state) => {
                 state.current = { ...state.current, finished: true };
             })
             .addCase(finishAttempt.rejected, (state, action) => {
-                throw new Error('finishAttempt failed:', action.payload);
+                state.error = action.payload ?? 'Ошибка завершения'
             })
             .addCase(fetchResult.fulfilled, (state, action) => {
                 state.result = action.payload;
             })
             .addCase(fetchResult.rejected, (state, action) => {
-                throw new Error('fetchResult failed:', action.payload);
+                 state.error = action.payload ?? 'Ошибка загрузки результата'
             });
     },
 });

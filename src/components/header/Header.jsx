@@ -13,7 +13,7 @@ const Header = () => {
 
     const toggleMenu = () => {
         navigate("/entry-page");
-        setOpen(!open);
+        setOpen(false);
     }
 
     return (
