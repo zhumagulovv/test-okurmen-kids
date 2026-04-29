@@ -9,6 +9,7 @@ import SingleChoice from '../components/common/SingleChoice'
 import CodeAnswer from '../components/common/CodeAnswer'
 import TextAnswer from '../components/common/TextAnswer'
 import MultiChoice from '../components/common/MultiChoice'
+import ErrorModal from '../components/common/ErrorModal'
 
 import {
     incrementTimer,
@@ -21,7 +22,7 @@ import {
 
 import { fetchResult, finishAttempt, submitAnswer } from '../features/attempt/attemptSlice'
 
-import { BLOCKED_COMBINATIONS } from '../constants/constants'
+import { BLOCKED_COMBINATIONS, EXAM_DURATION_SECONDS, URGENT_THRESHOLD } from '../constants/constants'
 
 // ✅ FIX: matchHotkey is a plain utility, NOT a hook — renamed to avoid Rules of Hooks violation
 import { matchHotkey } from '../helpers/matchHotkey'
@@ -34,14 +35,6 @@ import buildAnswerPayload from '../helpers/buildAnswerPayload'
 import { useExamGuard } from '../hooks/useExamguard'
 
 import logoImage from '../assets/logo.png'
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const EXAM_DURATION_SECONDS = 40 * 60
-const URGENT_THRESHOLD = 5 * 60
 
 const QUESTION_COMPONENTS = {
     single_choice: SingleChoice,
@@ -59,6 +52,7 @@ const TestPage = () => {
 
     // ✅ isExamActive controls both useBlocker replacement and useExamGuard
     const [isExamActive, setIsExamActive] = useState(true)
+    const [errorModal, setErrorModal] = useState(false)
 
     const isFinishingRef = useRef(false)
     const answersRef = useRef(answers)
@@ -137,8 +131,8 @@ const TestPage = () => {
             await finishExamFlow()
             navigate('/result-page')
         } catch (err) {
-            alert(err?.message || 'Ошибка завершения теста')
             console.error('[handleFinish]', err)
+            setErrorModal(err?.message || 'Ошибка завершения теста')
         }
     }, [finishExamFlow, navigate])
 
@@ -399,6 +393,17 @@ const TestPage = () => {
 
             {/* Subtle exam-mode border */}
             <div className="fixed inset-0 pointer-events-none border-12 border-(--primary)/5 rounded-4xl z-100" />
+
+            {errorModal && (
+                <ErrorModal
+                    message={errorModal}
+                    onClose={() => setErrorModal(null)}
+                    onRetry={() => {
+                        setErrorModal(null)
+                        handleFinish()
+                    }}
+                />
+            )}
         </section>
     )
 }

@@ -7,11 +7,14 @@ import { MdOutlineErrorOutline, MdOutlineQuiz } from 'react-icons/md'
 
 import { clearAttempt } from '../features/attempt/attemptSlice'
 import { Loading } from '../components/common/loading'
+import { useExamGuard } from '../hooks/useExamguard'
 
 const ResultPage = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const { result, loading, error } = useSelector((s) => s.attempt)
+
+    useExamGuard({ isActive: true })
 
     // If someone lands here with no result, send them home
     useEffect(() => {

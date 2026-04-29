@@ -118,3 +118,6 @@ export const HERO_INFO = [
         desc: "IDE в реальном времени"
     }
 ]
+
+export const EXAM_DURATION_SECONDS = 40 * 60
+export const URGENT_THRESHOLD = 5 * 60

@@ -5,7 +5,9 @@ import { Loading } from './components/common/loading'
 const ProtectedRoute = ({ children }) => {
     const { data, loading } = useSelector((state) => state.session)
 
-    if (loading) return <Loading />
+    const hasKey = !!localStorage.getItem("sessionKey")
+
+    if (loading && hasKey) return <Loading />
 
     if (!data) {
         return <Navigate to="/" replace />
