@@ -15,8 +15,8 @@ const Hero = ({ scroollRef }) => {
     };
     return (
         <section className="grow flex items-center justify-center relative mesh-gradient overflow-hidden">
-            <div className="absolute inset-0 geometric-dots opacity-50"></div>
-            <div className="absolute top-1/4 -right-24 w-96 h-96 background-color rounded-full blur-[120px]"></div>
+            {/* <div className="absolute inset-0 geometric-dots opacity-50 pointer-events-none"></div> */}
+            {/* <div className="absolute top-1/4 -right-24 w-96 h-96 background-color rounded-full blur-[120px]"></div> */}
             <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/10 rounded-full blur-[120px]"></div>
             <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center px-6 py-16 relative z-10">
 
