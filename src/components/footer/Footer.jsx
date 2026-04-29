@@ -8,7 +8,7 @@ const Footer = () => {
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     <div className="space-y-4">
-                        <a href='/' className="text-xl font-extrabold text-on-surface font-headline">Okurmen Kids</a>
+                        <Link to='/' className="text-xl font-extrabold text-on-surface font-headline">Okurmen Kids</Link>
                         <p className="text-sm text-on-surface-variant leading-relaxed">
                             Образовательная платформа для детей, чтобы освоить цифровые навыки и основы IT.
                         </p>
@@ -16,9 +16,9 @@ const Footer = () => {
                     <div className="space-y-4">
                         <h5 className="font-bold text-on-surface">Навигация</h5>
                         <ul className="space-y-2 text-sm text-on-surface-variant">
-                            <li><a className="transition-colors hover:text-(--primary)" href="/">Главная</a></li>
-                            <li><a className="transition-colors hover:text-(--primary)" href="#">Как использовать</a></li>
-                            <li><a className="transition-colors hover:text-(--primary)" href="#">Подготовка к экзамену</a></li>
+                            <li><Link className="transition-colors hover:text-(--primary)" to="/">Главная</Link></li>
+                            <li><Link className="transition-colors hover:text-(--primary)" to="/">Как использовать</Link></li>
+                            <li><Link className="transition-colors hover:text-(--primary)" to="/">Подготовка к экзамену</Link></li>
                         </ul>
                     </div>
                     <div className="space-y-4">

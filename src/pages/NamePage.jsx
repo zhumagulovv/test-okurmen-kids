@@ -6,7 +6,6 @@ import { BsPersonFill } from 'react-icons/bs'
 import { IoRocketSharp } from 'react-icons/io5'
 import { MdHelpOutline, MdOutlineCategory, MdOutlinePolyline, MdOutlineSettingsEthernet } from 'react-icons/md'
 import { startAttempt } from '../features/attempt/attemptSlice'
-import { clearSession } from '../features/auth/sessionSlice'
 
 import namePageImage from "../assets/namePage.png"
 import Button from '../shared/ui/Button'
@@ -120,10 +119,10 @@ const NamePage = () => {
                     </div>
                 </div>
             </main>
-            <div className="fixed bottom-12 left-12 hidden lg:block opacity-20">
+            <div className="fixed bottom-12 left-12 hidden lg:block opacity-20 pointer-events-none" aria-hidden="true">
                 <MdOutlineCategory className='text-[200px] text-(--primary)' />
             </div>
-            <div className="fixed top-12 right-12 hidden lg:block opacity-20">
+            <div className="fixed top-12 right-12 hidden lg:block opacity-20 pointer-events-none" aria-hidden="true">
                 <MdOutlinePolyline className='text-[200px] text-(--primary)' />
             </div>
         </section>
