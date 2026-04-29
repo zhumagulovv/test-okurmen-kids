@@ -15,6 +15,12 @@ const ResultPage = lazy(() => import("./pages/ResultPage"))
 import ProtectedRoute from "./ProtectedRoute"
 import AppInt from "./AppInt"
 
+const ProtectedLayout = () => (
+  <ProtectedRoute>
+    <TestLayout />
+  </ProtectedRoute>
+)
+
 const routes = createBrowserRouter([
   {
     path: '/',
@@ -25,11 +31,7 @@ const routes = createBrowserRouter([
     ]
   },
   {
-    element: (
-      <ProtectedRoute>
-        <TestLayout />
-      </ProtectedRoute>
-    ),
+    element: <ProtectedLayout />,
     children: [
       { path: '/entry-page', element: <EntryPage /> },
       {
@@ -56,7 +58,6 @@ const routes = createBrowserRouter([
 function App() {
   return (
     <>
-      <AppInt />
       <Suspense fallback={<Loading />}>
         <RouterProvider router={routes} />
       </Suspense>
