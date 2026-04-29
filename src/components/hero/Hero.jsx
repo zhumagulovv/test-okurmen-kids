@@ -15,9 +15,9 @@ const Hero = ({ scroollRef }) => {
     };
     return (
         <section className="grow flex items-center justify-center relative mesh-gradient overflow-hidden">
-            {/* <div className="absolute inset-0 geometric-dots opacity-50 pointer-events-none"></div> */}
-            {/* <div className="absolute top-1/4 -right-24 w-96 h-96 background-color rounded-full blur-[120px]"></div> */}
-            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/10 rounded-full blur-[120px]"></div>
+            <div className="absolute inset-0 geometric-dots opacity-50 pointer-events-none"></div>
+            <div className="absolute top-1/4 -right-24 w-96 h-96 background-color rounded-full blur-[120px] pointer-events-none"></div>
+            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/10 rounded-full blur-[120px] pointer-events-none"></div>
             <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center px-6 py-16 relative z-10">
 
                 <div className="lg:col-span-7 space-y-10 text-left">
@@ -64,7 +64,7 @@ const Hero = ({ scroollRef }) => {
                 <div className="lg:col-span-5">
                     <div
                         className="glass-panel p-10 rounded-4xl shadow-[0_32px_64px_-16px_rgba(0,87,189,0.15)] space-y-8 relative overflow-hidden">
-                        <div className="absolute -top-5 right-0 p-6 opacity-10">
+                        <div className="absolute -top-5 right-0 p-6 opacity-10 pointer-events-none">
                             <FaUserShield className='text-6xl' />
                         </div>
                         <div className="flex flex-col gap-4 relative z-10">
