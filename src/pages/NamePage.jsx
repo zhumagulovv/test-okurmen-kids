@@ -43,7 +43,7 @@ const NamePage = () => {
 
     return (
         <section className="bg-(--surface) text-(--on-surface) min-h-screen flex items-center justify-center p-6 overflow-hidden">
-            <div className="fixed inset-0 -z-10 overflow-hidden">
+            <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-(--primary-container)/20 blur-[120px]">
                 </div>
                 <div

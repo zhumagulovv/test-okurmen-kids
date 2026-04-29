@@ -40,9 +40,9 @@ const EntryPage = () => {
 
     return (
         <section className='bg-(--background) font-body text-(--on-surface) min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden'>
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] sixth-background">
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] sixth-background pointer-events-none">
             </div>
-            <div className="absolute bottom-[-5%] right-[-5%] w-[35%] h-[35%] rounded-full blur-[100px] bg-(--secondary-container)/30">
+            <div className="absolute bottom-[-5%] right-[-5%] w-[35%] h-[35%] rounded-full blur-[100px] bg-(--secondary-container)/30 pointer-events-none">
             </div>
             <div className="w-full max-w-lg z-10 relative">
                 <MdClose onClick={() => navigate("/")} className='text-3xl absolute top-2 right-2 cursor-pointer' />

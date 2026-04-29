@@ -124,7 +124,7 @@ export default resultSlice.reducer;
 
 // ─── Base Selectors ───────────────────────────────────────────────────────────
 
-const selectResultState = (state) => state.result;
+// const selectResultState = (state) => state.result;
 
 export const selectAllStudents = (state) => state.result.students;
 export const selectMeta = (state) => state.result.meta;
