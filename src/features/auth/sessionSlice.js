@@ -1,9 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { endpoints } from '../../service/api'; 
+import { endpoints } from '../../service/api';
 
 export const validateSession = createAsyncThunk(
     'session/validate',
-    async (key, { rejectWithValue }) => {
+    async (key, { rejectWithValue, getState }) => {
+        const { session } = getState()
+        if (session.data) return session.data
+        
         try {
             const result = await endpoints.validate({ key });
             return result;
