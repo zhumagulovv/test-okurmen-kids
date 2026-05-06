@@ -21,7 +21,7 @@ const CodeEditor = ({ language, value, onChange }) => {
 
     if (isMobile) {
         return (
-            <div className="relative w-full h-full flex flex-col min-h-[300px]">
+            <div className="relative w-full h-full flex flex-col min-h-75">
                 {/* язык-бейдж */}
                 <div
                     className="flex items-center gap-2 px-3 py-1.5 text-xs font-mono font-bold uppercase"

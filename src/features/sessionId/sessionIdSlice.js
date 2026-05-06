@@ -1,31 +1,37 @@
 import { createSlice, createAsyncThunk, createSelector } from "@reduxjs/toolkit";
 import { endpoints } from "../../service/api";
-
-// ─── Thunk ────────────────────────────────────────────────────────────────────
+import api from "../../service/api";
 
 export const fetchSessions = createAsyncThunk(
     "session/fetchSessions",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await endpoints.sessions();
-            return response;
+            let allSessions = []
+            let url = '/api/v1/sessions/'
 
+            while (url) {
+                const response = await api.get(url)
+                const results = Array.isArray(response) ? response : (response.results ?? [])
+                allSessions = [...allSessions, ...results]
+                const next = response.next
+                url = next
+                    ? next.replace('https://okurmenkidstest.up.railway.app', '')
+                    : null
+            }
+
+            return allSessions
         } catch (err) {
-            return rejectWithValue(err.response?.data?.message || "Failed to fetch sessions");
+            return rejectWithValue(err.message || "Failed to fetch sessions")
         }
     }
-);
-
-// ─── Initial State ─────────────────────────────────────────────────────────────
+)
 
 const initialState = {
-    sessionsID: [],           // full list from API
-    activeSessionId: null,  // currently selected session ID
-    status: "idle",         // "idle" | "loading" | "succeeded" | "failed"
+    sessionsID: [],
+    activeSessionId: null,
+    status: "idle",
     error: null,
 };
-
-// ─── Slice ─────────────────────────────────────────────────────────────────────
 
 const sessionIDSlice = createSlice({
     name: "sessionID",
@@ -46,27 +52,12 @@ const sessionIDSlice = createSlice({
             })
             .addCase(fetchSessions.fulfilled, (state, action) => {
                 state.status = "succeeded";
+                state.sessionsID = action.payload;
 
-                // Handle both array response and paginated { results: [] } shape
-                const raw = action.payload;
-
-                if (!raw) {
-                    state.sessionsID = []
-                    state.activeSessionId = null
-                    return
-                }
-
-                state.sessionsID = Array.isArray(raw)
-                    ? raw
-                    : (raw.results ?? raw.sessionsID ?? []);
-
-                // Auto-select: prefer the latest active/open session,
-                // fall back to the first session in the list
                 const active = state.sessionsID.find(
                     (s) => s.is_active || s.status === "active" || s.status === "open"
-                );
-
-                state.activeSessionId = (active ?? state.sessionsID[0])?.id ?? null;
+                )
+                state.activeSessionId = (active ?? state.sessionsID[0])?.id ?? null
             })
             .addCase(fetchSessions.rejected, (state, action) => {
                 state.status = "failed";
@@ -78,30 +69,24 @@ const sessionIDSlice = createSlice({
 export const { setActiveSession, resetSessions } = sessionIDSlice.actions;
 export default sessionIDSlice.reducer;
 
-// ─── Selectors ─────────────────────────────────────────────────────────────────
-
 export const selectSessions = (state) => state.sessionID.sessionsID;
 export const selectActiveSessionId = (state) => state.sessionID.activeSessionId;
 export const selectSessionStatus = (state) => state.sessionID.status;
 export const selectSessionError = (state) => state.sessionID.error;
 
-/** Full object of the currently active session */
 export const selectActiveSession = createSelector(
     selectSessions,
     selectActiveSessionId,
     (sessions, id) => {
         if (!Array.isArray(sessions)) return null
-
         return sessions.find((s) => s.id === id) ?? null
     }
 );
 
-/** Dropdown-ready list: [{ label, value }] */
 export const selectSessionOptions = createSelector(
     selectSessions,
     (sessions) => {
         if (!Array.isArray(sessions)) return [];
-
         return sessions.map((s) => ({
             label: s.title ?? s.name ?? `Session ${s.id}`,
             value: s.id,
