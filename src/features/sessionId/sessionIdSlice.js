@@ -4,7 +4,12 @@ import api from "../../service/api";
 
 export const fetchSessions = createAsyncThunk(
     "session/fetchSessions",
-    async (_, { rejectWithValue }) => {
+    async (_, { rejectWithValue, getState }) => {
+        const { sessionID } = getState()
+        if (sessionID.status === 'succeeded' && sessionID.sessionsID.length > 0) {
+            return sessionID.sessionsID
+        }
+
         try {
             let allSessions = []
             let url = '/api/v1/sessions/'
@@ -52,6 +57,8 @@ const sessionIDSlice = createSlice({
             })
             .addCase(fetchSessions.fulfilled, (state, action) => {
                 state.status = "succeeded";
+                // Если данные уже были — не перезаписываем
+                if (state.sessionsID.length > 0 && action.payload === state.sessionsID) return
                 state.sessionsID = action.payload;
 
                 const active = state.sessionsID.find(
