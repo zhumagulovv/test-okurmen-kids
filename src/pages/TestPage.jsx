@@ -24,14 +24,11 @@ import { fetchResult, finishAttempt, submitAnswer } from '../features/attempt/at
 
 import { BLOCKED_COMBINATIONS, EXAM_DURATION_SECONDS, URGENT_THRESHOLD } from '../constants/constants'
 
-// ✅ FIX: matchHotkey is a plain utility, NOT a hook — renamed to avoid Rules of Hooks violation
 import { matchHotkey } from '../helpers/matchHotkey'
-
 import { normalizeLanguage } from '../helpers/normalizeLanguage'
 import { formatTime } from '../helpers/formatTime'
 import buildAnswerPayload from '../helpers/buildAnswerPayload'
 
-// ✅ NEW: useExamGuard — blocks browser back/forward during exam
 import { useExamGuard } from '../hooks/useExamguard'
 
 import logoImage from '../assets/logo.png'
@@ -50,7 +47,6 @@ const TestPage = () => {
     const { currentIndex, elapsed, answers } = useSelector((s) => s.quiz)
     const { questions, current } = useSelector((s) => s.attempt)
 
-    // ✅ isExamActive controls both useBlocker replacement and useExamGuard
     const [isExamActive, setIsExamActive] = useState(true)
     const [errorModal, setErrorModal] = useState(false)
 
@@ -59,6 +55,9 @@ const TestPage = () => {
     const questionsRef = useRef(questions)
     const currentRef = useRef(current)
     const isExamActiveRef = useRef(true)
+
+    // ✅ FIX 2: Ref to always hold the latest handleAutoFinish — avoids stale closure in timer effect
+    const handleAutoFinishRef = useRef(null)
 
     useEffect(() => { answersRef.current = answers }, [answers])
     useEffect(() => { questionsRef.current = questions }, [questions])
@@ -72,16 +71,9 @@ const TestPage = () => {
     const normalizedLanguage = normalizeLanguage(question?.language)
     const timerIsUrgent = elapsed >= EXAM_DURATION_SECONDS - URGENT_THRESHOLD
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // ✅ NEW: useExamGuard integration
-    // Blocks browser back/forward buttons for the entire exam session.
-    // releaseGuard() is called before any intentional navigation (finish/auto-finish).
-    // ─────────────────────────────────────────────────────────────────────────
     const { releaseGuard } = useExamGuard({
         isActive: isExamActive,
         onIntercepted: () => {
-            // Optional: you can show a toast/alert here when back is blocked
-            // e.g. toast.warn('Нельзя использовать кнопки браузера во время экзамена')
             console.warn('[ExamGuard] Browser navigation blocked during exam')
         },
     })
@@ -112,7 +104,6 @@ const TestPage = () => {
             await dispatch(finishAttempt(attemptId)).unwrap()
             await dispatch(fetchResult(attemptId)).unwrap()
 
-            // ✅ Disable guard BEFORE navigating — allows intentional navigation
             releaseGuard()
             setIsExamActive(false)
 
@@ -147,20 +138,28 @@ const TestPage = () => {
         }
     }, [finishExamFlow])
 
+    // ✅ FIX 2: Keep ref always up-to-date with latest handleAutoFinish
+    useEffect(() => {
+        handleAutoFinishRef.current = handleAutoFinish
+    }, [handleAutoFinish])
+
     // ─────────────────────────────────────────────────────────────────────────
     // Timer expiry → auto finish
-    // ✅ FIX: separated into its own useEffect with only [elapsed] as dependency
+    // ✅ FIX 2: Use handleAutoFinishRef.current to avoid stale closure.
+    //    isExamActiveRef guards against double-firing (e.g. timer + visibilitychange).
     // ─────────────────────────────────────────────────────────────────────────
     useEffect(() => {
         if (elapsed < EXAM_DURATION_SECONDS) return
         if (!isExamActiveRef.current) return
 
-        handleAutoFinish().then(() => navigate('/result-page'))
+        // Mark inactive immediately to prevent any concurrent trigger (visibilitychange, etc.)
+        isExamActiveRef.current = false
+
+        handleAutoFinishRef.current?.().then(() => navigate('/result-page'))
     }, [elapsed]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // ─────────────────────────────────────────────────────────────────────────
-    // ✅ FIX: Timer + event listeners in ONE effect, mounted once
-    // Separated from auto-finish effect to avoid re-registering listeners
+    // Timer + event listeners — mounted once
     // ─────────────────────────────────────────────────────────────────────────
     useEffect(() => {
         dispatch(startTimer())
@@ -169,21 +168,20 @@ const TestPage = () => {
         // Tab hidden → auto-finish + redirect
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'hidden' && isExamActiveRef.current) {
-                handleAutoFinish().then(() => navigate('/result-page'))
+                // Mark inactive to prevent timer effect from also triggering
+                isExamActiveRef.current = false
+                handleAutoFinishRef.current?.().then(() => navigate('/result-page'))
             }
         }
         document.addEventListener('visibilitychange', handleVisibilityChange)
 
-        // beforeunload is already handled by useExamGuard — but we still need
-        // to attempt saving here as a best-effort before the page unloads
         const handleBeforeUnload = (e) => {
             e.preventDefault()
             e.returnValue = ''
-            handleAutoFinish().catch(() => { })
+            handleAutoFinishRef.current?.().catch(() => { })
         }
         window.addEventListener('beforeunload', handleBeforeUnload)
 
-        // ✅ FIX: matchHotkey is now a plain function, not a hook — safe inside useEffect
         const preventHotkeys = (e) => {
             if (BLOCKED_COMBINATIONS.some((combo) => matchHotkey(e, combo))) {
                 e.preventDefault()
@@ -206,7 +204,6 @@ const TestPage = () => {
             document.removeEventListener('cut', noop)
         }
     }, [dispatch]) // eslint-disable-line react-hooks/exhaustive-deps
-    // ↑ Only [dispatch] — stable reference, effect runs once on mount
 
     const QuestionComponent =
         question?.question_type && QUESTION_COMPONENTS[question.question_type]

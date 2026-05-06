@@ -9,17 +9,36 @@ const CodeAnswer = ({ language, value, onChange }) => {
     const allowedTabs = ENABLED_TABS[questionType];
 
     const [activeTab, setActiveTab] = useState(allowedTabs[0]);
-    
-    const [code, setCode] = useState(
-        typeof value === 'object' && value !== null ? value : DEFAULT_CODE
-    );
+
+    const [code, setCode] = useState(() => {
+        if (typeof value === 'object' && value !== null) return value;
+        if (typeof value === 'string' && value !== '') {
+            const key = questionType === 'python' ? 'py' : 'js';
+            return { ...DEFAULT_CODE, [key]: value };
+        }
+        return DEFAULT_CODE;
+    });
+
     const [srcDoc, setSrcDoc] = useState('');
+
+    // ✅ FIX 1: Sync internal code state when `value` prop changes (e.g. question navigation)
+    useEffect(() => {
+        if (typeof value === 'object' && value !== null) {
+            setCode(value);
+        } else if (typeof value === 'string') {
+            const key = questionType === 'python' ? 'py' : 'js';
+            setCode(prev => ({ ...DEFAULT_CODE, ...prev, [key]: value }));
+        } else {
+            // value is undefined/null/empty — reset to defaults
+            setCode(DEFAULT_CODE);
+        }
+    }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (!allowedTabs.includes(activeTab)) {
             setActiveTab(allowedTabs[0]);
         }
-    }, [questionType]);
+    }, [questionType]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (questionType !== 'python') {
@@ -42,7 +61,7 @@ const CodeAnswer = ({ language, value, onChange }) => {
         const updated = { ...code, [activeTab]: newValue || '' };
         setCode(updated);
 
-        // ✅ For python/js send just the code string
+        // For python/js send just the code string
         // For layout/fullstack send the whole object
         if (questionType === 'python') {
             onChange?.(updated.py);

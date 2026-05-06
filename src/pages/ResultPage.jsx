@@ -8,6 +8,7 @@ import { MdOutlineErrorOutline, MdOutlineQuiz } from 'react-icons/md'
 import { clearAttempt } from '../features/attempt/attemptSlice'
 import { Loading } from '../components/common/loading'
 import { useExamGuard } from '../hooks/useExamguard'
+import { GiSandsOfTime } from 'react-icons/gi'
 
 const ResultPage = () => {
     const dispatch = useDispatch()
@@ -116,8 +117,9 @@ const ResultPage = () => {
                             </p>
 
                             {pending > 0 && (
-                                <p className="text-sm text-(--on-surface-variant) mt-3 bg-(--surface-container-low) px-4 py-2 rounded-xl inline-block">
-                                    ⏳ {pending} ответ(а) ещё проверяются — итоговый балл может обновиться
+                                <p className="text-sm text-(--on-surface-variant) mt-3 bg-(--surface-container-low) px-4 py-2 rounded-xl flex items-center">
+                                    <GiSandsOfTime />
+                                    <span>{pending} ответ(а) ещё проверяются — итоговый балл может обновиться</span>
                                 </p>
                             )}
                         </div>
