@@ -31,6 +31,7 @@ const routes = createBrowserRouter([
     ]
   },
   {
+    path: "/",
     element: <ProtectedLayout />,
     children: [
       { path: '/entry-page', element: <EntryPage /> },
