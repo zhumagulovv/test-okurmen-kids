@@ -65,10 +65,11 @@ const EntryPage = () => {
                                 error && <p className="text-red-500 text-sm mt-2">{error}</p>
                             }
                             <div
-                                className="absolute inset-0 rounded-xl pointer-events-none border-2 border-(--primary)/0 group-focus-within:(--primary)transition-all">
+                                className="absolute inset-0 rounded-xl pointer-events-none border-2 border-(--primary)/0 group-focus-within:border-(--primary)transition-all">
                             </div>
                         </div>
                         <Button
+                            type='submit'
                             onClick={handleSubmit}
                             variant="gradient"
                             loading={loading}

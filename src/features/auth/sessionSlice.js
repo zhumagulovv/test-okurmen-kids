@@ -4,9 +4,15 @@ import { endpoints } from '../../service/api';
 export const validateSession = createAsyncThunk(
     'session/validate',
     async (key, { rejectWithValue, getState }) => {
+
+        if (!key?.trim()) {
+            return rejectWithValue('Ключ сессии пустой')
+        }
+
         const { session } = getState()
-        if (session.data) return session.data
         
+        if (session.data) return session.data
+
         try {
             const result = await endpoints.validate({ key });
             return result;

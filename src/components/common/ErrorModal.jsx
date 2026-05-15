@@ -1,3 +1,5 @@
+import { MdOutlineErrorOutline } from "react-icons/md"
+
 const ErrorModal = ({ message, onClose, onRetry }) => {
     return (
         <div
@@ -7,7 +9,7 @@ const ErrorModal = ({ message, onClose, onRetry }) => {
             <div className="bg-(--surface-container-lowest) rounded-(--xl) border border-(--outline-variant)/20 p-8 max-w-md w-full shadow-xl animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-start gap-4 mb-6">
                     <div className="w-10 h-10 rounded-full bg-(--error)/10 flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-(--error) text-xl">error</span>
+                        <MdOutlineErrorOutline className="text-red-500" />
                     </div>
                     <div>
                         <h2 className="font-headline font-bold text-lg text-(--on-surface) mb-1">
