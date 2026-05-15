@@ -20,6 +20,7 @@ const EntryPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+
         if (!code.trim()) {
             setLocalError('Пожалуйста, введите ключ сессии')
             return
@@ -27,11 +28,11 @@ const EntryPage = () => {
 
         setLocalError('')
 
-        localStorage.setItem('sessionKey', code)
-
+        
         const res = await dispatch(validateSession(code))
-
+        
         if (res.meta.requestStatus === 'fulfilled') {
+            localStorage.setItem('sessionKey', code)
             navigate('/name-page')
         } else {
             localStorage.removeItem('sessionKey')
@@ -69,7 +70,7 @@ const EntryPage = () => {
                             </div>
                         </div>
                         <Button
-                            type='submit'
+                            type='button'
                             onClick={handleSubmit}
                             variant="gradient"
                             loading={loading}

@@ -5,22 +5,34 @@ export const validateSession = createAsyncThunk(
     'session/validate',
     async (key, { rejectWithValue, getState }) => {
 
-        if (!key?.trim()) {
+        const normalizedKey = String(key || '').trim()
+
+        if (!normalizedKey) {
             return rejectWithValue('Ключ сессии пустой')
         }
 
         const { session } = getState()
-        
-        if (session.data) return session.data
+
+        if (session.data?.key === normalizedKey) {
+            return session.data
+        }
 
         try {
-            const result = await endpoints.validate({ key });
-            return result;
+            const result = await endpoints.validate({
+                key: normalizedKey
+            })
+
+            return result
+
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(
+                error?.response?.data?.error ||
+                error.message ||
+                'Ошибка проверки сессии'
+            )
         }
     }
-);
+)
 
 const sessionSlice = createSlice({
     name: 'session',
