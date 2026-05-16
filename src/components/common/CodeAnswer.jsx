@@ -105,21 +105,6 @@ const CodeAnswer = ({ language, value, onChange }) => {
                         />
                     </div>
                 </section>
-
-                {/* Preview for non-python */}
-                {/* {questionType !== 'python' && (
-                    <section className="grow flex flex-col bg-(--surface-container-lowest) rounded-3xl overflow-hidden border border-(--outline-variant)/10">
-                        <div className="bg-(--surface-container-low) px-4 py-3 text-xs text-(--on-surface-variant) font-medium">
-                            Предпросмотр
-                        </div>
-                        <iframe
-                            srcDoc={srcDoc}
-                            title="preview"
-                            sandbox="allow-scripts"
-                            className="flex-1 w-full bg-white"
-                        />
-                    </section>
-                )} */}
             </main>
         </section>
     );

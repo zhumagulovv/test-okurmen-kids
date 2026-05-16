@@ -193,6 +193,7 @@ const TestPage = () => {
         document.addEventListener('copy', noop)
         document.addEventListener('paste', noop)
         document.addEventListener('cut', noop)
+        document.addEventListener('contextmenu', noop)
 
         return () => {
             clearInterval(timerInterval)
@@ -202,8 +203,48 @@ const TestPage = () => {
             document.removeEventListener('copy', noop)
             document.removeEventListener('paste', noop)
             document.removeEventListener('cut', noop)
+            document.removeEventListener('contextmenu', noop)
         }
     }, [dispatch]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        const enterFullscreen = async () => {
+            try {
+                if (!document.fullscreenElement) {
+                    await document.documentElement.requestFullscreen()
+                }
+            } catch (err) {
+                console.error('Fullscreen error', err)
+            }
+        }
+
+        enterFullscreen()
+    }, [])
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            if (!document.fullscreenElement && isExamActiveRef.current) {
+                isExamActiveRef.current = false
+
+                alert('Вы вышли из полноэкранного режима')
+
+                handleAutoFinishRef.current?.()
+                    .then(() => navigate('/result-page'))
+            }
+        }
+
+        document.addEventListener(
+            'fullscreenchange',
+            handleFullscreenChange
+        )
+
+        return () => {
+            document.removeEventListener(
+                'fullscreenchange',
+                handleFullscreenChange
+            )
+        }
+    }, [navigate])
 
     const QuestionComponent =
         question?.question_type && QUESTION_COMPONENTS[question.question_type]
@@ -340,7 +381,7 @@ const TestPage = () => {
                                             {normalizedLanguage}
                                         </span>
                                     )}
-                                    <h2 className="font-headline font-bold text-3xl md:text-4xl text-(--on-background) leading-tight">
+                                    <h2 className="font-headline font-bold text-3xl md:text-4xl text-(--on-background) leading-tight select-none">
                                         {question.text}
                                     </h2>
                                 </div>
